@@ -360,39 +360,110 @@
   });
 
   /* ------------------------------------------------------------------
-     Careers form — composes an email, no backend required
+     Forms — compose an email, no backend required
   ------------------------------------------------------------------ */
-  var form = doc.querySelector('[data-apply-form]');
+  function collect(data, key) {
+    return (data.get(key) || '').toString().trim();
+  }
 
-  if (form) {
-    var status = form.querySelector('[data-form-status]');
+  var applyForm = doc.querySelector('[data-apply-form]');
 
-    form.addEventListener('submit', function (event) {
+  if (applyForm) {
+    var applyStatus = applyForm.querySelector('[data-form-status]');
+    var cvInput = applyForm.querySelector('input[type="file"]');
+
+    var setStatus = function (message, isError) {
+      if (!applyStatus) return;
+      applyStatus.textContent = message;
+      applyStatus.classList.toggle('is-error', !!isError);
+      applyStatus.classList.toggle('is-ok', !isError);
+    };
+
+    applyForm.addEventListener('submit', function (event) {
       event.preventDefault();
-      var data = new FormData(form);
-      var name = (data.get('name') || '').toString().trim();
-      var email = (data.get('email') || '').toString().trim();
-      var interest = (data.get('interest') || '').toString().trim();
-      var message = (data.get('message') || '').toString().trim();
+      var data = new FormData(applyForm);
+      var name = collect(data, 'name');
+      var email = collect(data, 'email');
+      var phone = collect(data, 'phone');
+      var linkedin = collect(data, 'linkedin');
+      var interest = collect(data, 'interest');
+      var message = collect(data, 'message');
 
-      if (!name || !email) {
-        if (status) {
-          status.textContent = 'Please add your name and email so we can reply.';
-          status.classList.add('is-error');
-        }
+      if (!name || !email || !phone) {
+        setStatus('Please add your name, email and phone number so we can reply.', true);
         return;
       }
 
-      var subject = 'Careers — ' + (interest || 'General application') + ' — ' + name;
-      var bodyText = 'Name: ' + name + '\nEmail: ' + email + '\nArea of interest: ' + (interest || 'General') + '\n\n' + message;
-      var href = 'mailto:careers@sahangroup.lk?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(bodyText);
-
-      if (status) {
-        status.classList.remove('is-error');
-        status.textContent = 'Opening your email app with your application ready to send…';
+      if (cvInput && cvInput.files && cvInput.files.length) {
+        var file = cvInput.files[0];
+        var allowed = /\.(pdf|doc|docx)$/i.test(file.name);
+        if (!allowed) {
+          setStatus('Please attach a PDF or Word document for your CV.', true);
+          return;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+          setStatus('Your CV needs to be 5 MB or smaller.', true);
+          return;
+        }
       }
 
-      window.location.href = href;
+      var subject = 'Careers — ' + (interest || 'General application') + ' — ' + name;
+      var body = [
+        'Name: ' + name,
+        'Email: ' + email,
+        'Phone: ' + phone,
+        'LinkedIn: ' + (linkedin || '—'),
+        'Area of interest: ' + (interest || 'General'),
+        '',
+        message || '(No note added)',
+        '',
+        'Please attach my CV to this email before sending.'
+      ].join('\n');
+
+      setStatus('Opening your email app — attach your CV and send. We reply within two days.');
+      window.location.href = 'mailto:careers@sahangroup.lk?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+    });
+  }
+
+  var enquiryForm = doc.querySelector('[data-enquiry-form]');
+
+  if (enquiryForm) {
+    var enquiryStatus = enquiryForm.querySelector('[data-form-status]');
+    var setEnquiryStatus = function (message, isError) {
+      if (!enquiryStatus) return;
+      enquiryStatus.textContent = message;
+      enquiryStatus.classList.toggle('is-error', !!isError);
+      enquiryStatus.classList.toggle('is-ok', !isError);
+    };
+
+    enquiryForm.addEventListener('submit', function (event) {
+      event.preventDefault();
+      var data = new FormData(enquiryForm);
+      var name = collect(data, 'name');
+      var email = collect(data, 'email');
+      var phone = collect(data, 'phone');
+      var unit = collect(data, 'unit');
+      var budget = collect(data, 'budget');
+      var message = collect(data, 'message');
+
+      if (!name || !email || !phone) {
+        setEnquiryStatus('Please add your name, email and phone so the sales team can reach you.', true);
+        return;
+      }
+
+      var subject = 'AVORA Residences — register interest — ' + name;
+      var body = [
+        'Name: ' + name,
+        'Email: ' + email,
+        'Phone: ' + phone,
+        'Unit type: ' + (unit || '—'),
+        'Budget: ' + (budget || '—'),
+        '',
+        message || '(No note added)'
+      ].join('\n');
+
+      setEnquiryStatus('Opening your email app with your details — send it and the team will be in touch.');
+      window.location.href = 'mailto:info@sahangroup.lk?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
     });
   }
 })();

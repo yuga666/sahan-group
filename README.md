@@ -2,9 +2,9 @@
 
 ![Sahan Group homepage](preview/home-hero.jpg)
 
-A static, four-page website for Sahan Group, aligned to the supplied Sahan Group Brand Guide — Midnight Canopy and Executive Pine greens, Golden Oak, Warm Cashmere and paper ivory — with the interaction and layout language of [jxg.lk](https://jxg.lk/) and [unilever.com](https://www.unilever.com/).
+A static, five-page website for Sahan Group, built from the client's information request, company profile and brand documents, and aligned to the supplied Sahan Group Brand Guide — Midnight Canopy and Executive Pine greens, Golden Oak, Warm Cashmere and paper ivory — with the interaction language of [jxg.lk](https://jxg.lk/) and [unilever.com](https://www.unilever.com/).
 
-Pages: **Home**, **About us**, **Verticals** (with a **Properties** tab and top-level nav link), **Careers**.
+Pages: **Home**, **About us**, **Verticals**, **Properties**, **Careers**.
 
 ---
 
@@ -26,19 +26,41 @@ Fonts are embedded in `assets/fonts/fonts.css`, so the site renders correctly ev
 
 ---
 
+## The group
+
+The site presents seven businesses. The first six are drawn from the client's files and logos; Kaze is retained from the October information request.
+
+| Company | Sector | Summary |
+| --- | --- | --- |
+| **Sahan Engineering** | Engineering | Civil, building and water infrastructure; ICTAD registration C-9571, Grade C-4 building, with grades for highways, bridges, drainage, irrigation and marine works. |
+| **Sahan Construction** | Real estate & construction | The group's main real estate and construction company — commercial, industrial and public projects, government tenders, warehouses, factories, homes and apartments. |
+| **Sahan Homes** | Housing | A Sahan Construction company handling housing projects and apartments; developer of AVORA Residences. |
+| **Kaze Restaurant & Pub** | Hospitality | Chinese and Sri Lankan dining, BYOB, three VIP rooms, two karaoke rooms, pub and banquet hall in Gampaha; 11 AM–11.30 PM; delivery via Uber Eats and PickMe. |
+| **Pure Spring** | Bottled water | Natural mineral water from a 115-metre aquifer, bottled at source in Bandarawela on a fully automated line; 500 ml–19 L and a Premium range in development. |
+| **Cassandara** | Trading | A Dubai-registered general trading company for imports and exports, with fresh produce — vegetables — at its core. |
+| **Invest Lanka** | Financial services | Loans, gold loans and leasing for three-wheelers and motorcycles. |
+
+---
+
 ## Structure
 
 ```
-index.html                 Home — hero, who we are, verticals, Journal, AVORA, Commitments, On social, principles, careers
-about.html                 About us — story, chapters, values, quote, the group
-verticals.html             Verticals — food & beverage, hospitality, real estate and the Properties collection (sticky section nav)
-careers.html               Careers — culture, benefits, open roles, hiring process, application form
+index.html                 Home — hero, who we are, seven companies, Journal, AVORA, commitments, social, principles, careers
+about.html                 About us — story, chapters, group structure, values, quote
+verticals.html             Verticals — a section per company, with sticky section navigation
+properties.html            Properties — Sahan Homes and AVORA Residences, gallery, register-interest form
+careers.html               Careers — culture, benefits, CV submission portal
 
 assets/css/styles.css      Design system, layout, components, responsive rules
-assets/js/main.js          Navigation, reveal-on-scroll, scrollspy, lightbox, form handling
-assets/fonts/fonts.css     Cormorant Garamond + Inter (latin subsets, embedded as data URIs); Helvetica Neue and Optima are used locally where available
-assets/img/                Photography, AVORA renders, logo lockups, favicon, social image
-_brand/                    Original supplied logo files (PNG + SVG), kept for reference
+assets/js/main.js          Navigation, reveal-on-scroll, scrollspy, swimlanes, lightbox, forms
+assets/fonts/fonts.css     Cormorant Garamond + Inter (latin subsets, embedded as data URIs)
+assets/img/                Photography, AVORA renders, company logos, favicon, social image
+assets/img/brand/          Pure Spring, Sahan Homes, Cassandara and Invest Lanka logos
+_brand/                    Original supplied group logo files (PNG + SVG)
+netlify.toml               Publish settings, security headers and CSP for Netlify
+robots.txt / sitemap.xml   Crawl rules and page list (domain placeholder — see below)
+404.html                   Branded not-found page
+preview/                   Reference screenshots used in this README and for client review
 ```
 
 ---
@@ -58,63 +80,63 @@ _brand/                    Original supplied logo files (PNG + SVG), kept for re
 | `--hearthstone` | `#a79a84` | Secondary neutral |
 | `--paper` | `#f6f2e9` | Warm ivory page background |
 
-Type follows the Brand Guide: **Helvetica Neue** for body, navigation and UI (with **Inter** as the self-hosted fallback), **Cormorant Garamond** for editorial display, and **Optima** for property accents. The AVORA title uses a bold sans setting that echoes the guide's display face.
+Type: **Helvetica Neue** for body, navigation and UI (with **Inter** as the self-hosted fallback), **Cormorant Garamond** for editorial display, and **Optima** for property accents. Company logos are supplied artwork and set on neutral plates so their original backgrounds stay intact.
 
 ---
 
-## Content and assets to review before going live
+## Key content and interactions
 
-A few items are intentionally editable placeholders:
+- **Home** leads with the group proposition ("One group. Seven businesses. Twenty-five years."), then a seven-company grid, a Journal swimlane, AVORA (Sahan Homes), the group's four commitments, an On social strip, the group's principles and a careers call to action.
+- **About** tells the 2001 origin story, the chapters that followed, the group structure (with Sahan Homes shown under Sahan Construction), the three values — respect, transparency, collaboration — and the group facts.
+- **Verticals** gives each company a full section with services, facts, imagery and a contact route. The sticky sub-navigation tracks the section in view.
+- **Properties** is the Sahan Homes / AVORA page: 24 apartments, 10 floors, 2/3/4 bedrooms, from LKR 24 million, construction 2027–2029, amenities, gallery lightbox, location and an enquiry form.
+- **Careers** is a CV portal, not a job board: name, contact, LinkedIn, area of interest, note and CV type/size validation, with a two-day reply promise. The form opens the visitor's email app with the details filled in.
 
-1. **Contact details** — `info@sahangroup.lk`, `careers@sahangroup.lk`, the brand-guide phone number `077 239 9049` and “Colombo, Sri Lanka” across all four pages.
-2. **Social links** — footer and mobile-menu `href="#"` placeholders for Instagram, LinkedIn and Facebook.
-3. **Careers roles** — the six openings and their requirements are sample content, written to show the layout. Replace them with live roles.
-4. **AVORA and Properties** — status, typology, amenities, location, “first address” wording and enquiry routes should be confirmed by the project team. The note “Images are artist’s impressions…” is included on the home gallery.
-5. **Photography** — AVORA visuals are cropped and colour-graded from the supplied `EXTERIOR.pdf` renders. Food & beverage, hospitality and the three commitment photographs (solar, produce market, studio team) are royalty-free Unsplash images used as placeholders; swap them for owned photography when available. `_brand/` contains the original supplied logo files.
-6. **Journal, commitments and social copy** — the six Journal entries, four commitments and five social captions are sample content written to demonstrate the layout. Replace them with approved stories and dates before launch, and confirm the sustainability claims with the client.
-7. **Social handle** — `@sahangroup` in the On social section is a placeholder until real accounts are confirmed.
-8. **Share image** — `assets/img/og-image.jpg` (1200×630). Social platforms require an absolute URL for `og:image` once the site has a domain.
-
-The application form is intentionally backend-free: it validates the fields, then opens the visitor’s email app with a pre-filled message to `careers@sahangroup.lk`. Connect it to a form service or ATS if you want in-page submissions.
-
----
-
-## Interactions
-
-- Sticky header that changes from transparent to ivory, with a dark logo swap.
-- Full-screen mobile navigation with keyboard `Esc` support and scroll locking.
-- Reveal-on-scroll for text and images (disabled automatically for `prefers-reduced-motion`).
-- Parallax on the home hero (desktop only).
-- Sticky section nav with scrollspy on Verticals, including the Properties collection tab.
-- Property card with AVORA details, amenity strip and direct enquiry actions.
-- Swimlane carousels (Journal and On social): scroll-snap, arrow controls, dot navigation, keyboard arrows, and disabled states at each end.
-- Rounded "mask" corners on cards, media and section ends, echoing Unilever's soft content blocks.
-- Journal, Commitments and On social modules add editorial depth; social tiles open the shared lightbox with captions.
-- Accessible AVORA gallery lightbox: arrow keys, `Esc`, focus handling, captions.
-- FAQ-style role accordions using native `<details>`.
-- Responsive `srcset` variants for the largest images.
-
+Shared interactions: sticky header with logo swap, full-screen mobile navigation, reveal-on-scroll, scroll progress, swimlane carousels with arrows/dots/keyboard support, accessible lightbox, and a sticky section subnav on Verticals.
 
 ---
 
 ## Unilever-inspired UI notes
 
-The client asked for the feel of [unilever.com](https://www.unilever.com/). The following patterns were adapted, never copied outright, and kept inside the Sahan brand palette and type system:
+The client asked for the feel of [unilever.com](https://www.unilever.com/). These patterns were adapted, not copied, and kept inside the Sahan brand palette and type system:
 
 | Unilever pattern | Sahan implementation |
 | --- | --- |
-| Large rounded section ends and card masks | `--radius-section`, `--radius-mask` and `.section--round`; the next section shows through each bottom-right curve |
-| Tag pills flush to the media edge | `.tag` on Journal cards, gold with ink text |
-| News card grid and swimlane | `.swimlane` + `.ncard`: 3-up desktop, 2-up tablet, 82% peek on phones, with arrows and dots |
+| Large rounded section ends and card masks | `--radius-section`, `--radius-mask`, `.section--round`; the next section shows through each bottom-right curve |
+| Tag pills flush to the media edge | `.tag` on Journal and company cards, gold with ink text |
+| News card grid and swimlane | `.swimlane` + `.ncard`: 3-up desktop, 2-up tablet, 82% peek on phones, arrows and dots |
 | Four-pillar sustainability block | Commitments section with `.pillars` and four masked images |
-| "On social media" strip with modal | Social swimlane; each tile opens the existing accessible lightbox with its caption |
+| "On social media" strip with modal | Social swimlane; each tile opens the lightbox with its caption |
 | Underlined card titles that clear on hover | `.ncard__title span` underline animation |
-| Pill buttons with a moving arrow | `.btn` now uses a full pill radius; arrow slides on hover |
+| Pill buttons with a moving arrow | `.btn` uses a full pill radius; the arrow slides on hover |
 
-Content added for the demo: six Journal entries, four commitments, and five social captions. All of it is sample copy — see the list below.
+---
+
+## Content and assets to review before going live
+
+1. **Contact details** — `info@sahangroup.lk`, `careers@sahangroup.lk`, `077 239 9049`, `+94 33 223 3004`, 136/4 Minuwangoda, Miriswatta Road, Gampaha and 8.00 AM–4.00 PM come from the information request, the engineering profile and the brand guide. Confirm the main and WhatsApp lines, and whether the two email addresses exist yet.
+2. **Social links** — footer and mobile-menu `href="#"` placeholders for Instagram, LinkedIn and Facebook. The `@sahangroup` handle is also a placeholder.
+3. **Kaze** — retained from the October information request. The newest brief lists Engineering, Construction, Homes, Cassandara, Invest Lanka and Pure Spring but not Kaze; remove the Kaze section and grid card if it is no longer part of the group. Confirm Kaze's phone, reservation link and social accounts.
+4. **Cassandara and Invest Lanka** — descriptions are based on the client's brief ("Dubai-registered", "imports and exports, vegetables", "loans, gold loans, leasing for three-wheelers and bikes"). Confirm the registered name, trade lanes, product range and the exact lending products, rates and regulatory wording before launch.
+5. **Pure Spring** — product facts, aquifer depth, Bandarawela factory, ISO 22000/SLS/HACCP/GMP, and the order line `076 441 3391` come from the brief, the information request and the supplied campaign artwork. Confirm the certification numbers and the Premium range launch timing. The campaign images carry their own phone number and marketing copy.
+6. **Sahan Engineering and Sahan Construction** — the engineering profile is for *Sahan Engineering and Construction (Pvt) Ltd* (ICTAD C-9571, Grade C-4). The site presents Engineering and Construction as two group businesses per the client's brief; confirm the legal entity structure and which projects may be named publicly.
+7. **AVORA** — 24 apartments, 10 floors, 2/3/4 bedrooms, from LKR 24 million, 2027–2029, amenities and the Gampaha location come from the information request. Confirm pricing, payment plans, floor plans, brochure, sales contact and the Google Maps link. Renders are cropped and graded from the supplied `EXTERIOR.pdf`.
+8. **Journal, commitments and social copy** — the six Journal entries, four commitments and five social captions are sample content written to demonstrate the layout. Replace them with approved stories and dates, and confirm the sustainability claims with the client.
+9. **Photography** — AVORA visuals are the client's renders. Construction, trading, finance, hospitality, water and community photographs are royalty-free Unsplash images or client-supplied campaign artwork, used as placeholders; swap them for owned photography where possible.
+10. **Forms** — both forms are backend-free and compose an email. Connect them to Netlify Forms or an ATS/form service for in-page submissions. The privacy notes are short starting points for Sri Lanka PDPA review.
+11. **SEO and sharing** — `og:image` is relative; set an absolute URL on the final domain. Add `sitemap.xml`, `robots.txt`, canonical tags, a 404 page and security headers (see the launch plan).
+12. **Deployment hygiene** — publish the site files only; keep `_brand/`, `preview/` and `README.md` out of the public web root.
+
+Source documents used: *Sahan Group Website Information Request* (Gayan, 22 Oct 2026), *Sahan Engineering company profile 2025 part 01*, the three *Brand Manifesto & Discovery Brief* documents, *Sahan Group Brand Guide*, and the *4-day launch plan* (16 Nov 2026).
 
 ---
 
 ## Deploying
 
 Upload the folder contents to any static host (Netlify, Vercel, Cloudflare Pages, S3, cPanel). No server-side runtime is needed. Keep `index.html` at the web root.
+
+`netlify.toml` is ready for Netlify: it publishes the folder root, sets HSTS, `nosniff`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy` and a Content-Security-Policy whose script hash matches the inline `js` class script. Long-lived caching is set for `/assets/*`. The www-to-non-www redirect is present but commented out until the domain is confirmed — enable one direction only.
+
+`robots.txt` and `sitemap.xml` currently use `https://sahangroup.lk/` as the domain. Replace it with the final domain before submitting the sitemap to Google Search Console. `404.html` is picked up automatically by Netlify.
+
+For in-page form submissions, connect the two forms to Netlify Forms (or an ATS/form service) and add the honeypot and file-size limits described in the launch plan.
