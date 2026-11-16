@@ -2,9 +2,9 @@
 
 ![Sahan Group homepage](preview/home-hero.jpg)
 
-A static, four-page website for Sahan Group, inspired by the structure and pacing of [jxg.lk](https://jxg.lk/) and rebuilt in the Sahan brand palette: forest greens, paper ivory and brand gold.
+A static, four-page website for Sahan Group, inspired by the structure and pacing of [jxg.lk](https://jxg.lk/) and aligned to the supplied Sahan Group Brand Guide — Midnight Canopy and Executive Pine greens, Golden Oak, Warm Cashmere and paper ivory.
 
-Pages: **Home**, **About us**, **Verticals**, **Careers**.
+Pages: **Home**, **About us**, **Verticals** (with a **Properties** tab and top-level nav link), **Careers**.
 
 ---
 
@@ -31,12 +31,12 @@ Fonts are embedded in `assets/fonts/fonts.css`, so the site renders correctly ev
 ```
 index.html                 Home — hero, who we are, three verticals, AVORA, principles, careers
 about.html                 About us — story, chapters, values, quote, the group
-verticals.html             Verticals — food & beverage, hospitality, real estate (sticky section nav)
+verticals.html             Verticals — food & beverage, hospitality, real estate and the Properties collection (sticky section nav)
 careers.html               Careers — culture, benefits, open roles, hiring process, application form
 
 assets/css/styles.css      Design system, layout, components, responsive rules
 assets/js/main.js          Navigation, reveal-on-scroll, scrollspy, lightbox, form handling
-assets/fonts/fonts.css     Cormorant Garamond + Inter (latin subsets, embedded as data URIs)
+assets/fonts/fonts.css     Cormorant Garamond + Inter (latin subsets, embedded as data URIs); Helvetica Neue and Optima are used locally where available
 assets/img/                Photography, AVORA renders, logo lockups, favicon, social image
 _brand/                    Original supplied logo files (PNG + SVG), kept for reference
 ```
@@ -47,16 +47,18 @@ _brand/                    Original supplied logo files (PNG + SVG), kept for re
 
 | Token | Value | Use |
 | --- | --- | --- |
-| `--ink` | `#1c241e` | Primary charcoal green (body text, dark sections) |
-| `--forest` | `#232c26` | Deep green panels |
-| `--sage` / `--sage-deep` | `#6f7a6e` / `#3f4a42` | Secondary text, labels |
-| `--gold` | `#b3976a` | Brand gold on dark backgrounds |
-| `--gold-ink` | `#a8874f` | Gold accents on paper (contrast-adjusted) |
+| `--ink` | `#1c241e` | Graphite Pine — primary text and dark sections |
+| `--forest` | `#283229` | Executive Pine — panels |
+| `--forest-deep` | `#141915` | Midnight Canopy — footer and deepest surfaces |
+| `--sage` / `--sage-deep` | `#6f7a6e` / `#3f4a42` | Meadow Mist / Highland Moss — secondary text and labels |
+| `--gold` | `#c6b08a` | Golden Oak — brand gold on dark surfaces and buttons |
+| `--gold-ink` | `#a8874f` | Accessible gold accent on paper |
 | `--gold-label` | `#8e7344` | Small gold labels on paper |
-| `--sand` / `--cream` | `#d8c6a6` / `#e7d9bf` | Light gold accents and gradients |
-| `--paper` | `#f7f4ee` | Ivory page background |
+| `--sand` / `--cream` | `#e7d9bf` / `#efe4ce` | Warm Cashmere accents and gradients |
+| `--hearthstone` | `#a79a84` | Secondary neutral |
+| `--paper` | `#f6f2e9` | Warm ivory page background |
 
-Type: **Cormorant Garamond** for display and editorial copy, **Inter** for labels, navigation and UI. Both are self-hosted variable fonts.
+Type follows the Brand Guide: **Helvetica Neue** for body, navigation and UI (with **Inter** as the self-hosted fallback), **Cormorant Garamond** for editorial display, and **Optima** for property accents. The AVORA title uses a bold sans setting that echoes the guide's display face.
 
 ---
 
@@ -64,10 +66,10 @@ Type: **Cormorant Garamond** for display and editorial copy, **Inter** for label
 
 A few items are intentionally editable placeholders:
 
-1. **Contact details** — `info@sahangroup.lk`, `careers@sahangroup.lk` and “Colombo, Sri Lanka” across all four pages.
+1. **Contact details** — `info@sahangroup.lk`, `careers@sahangroup.lk`, the brand-guide phone number `077 239 9049` and “Colombo, Sri Lanka” across all four pages.
 2. **Social links** — footer and mobile-menu `href="#"` placeholders for Instagram, LinkedIn and Facebook.
 3. **Careers roles** — the six openings and their requirements are sample content, written to show the layout. Replace them with live roles.
-4. **AVORA details** — status, typology, amenities, location and enquiry route should be confirmed by the project team. The note “Images are artist’s impressions…” is included on the gallery.
+4. **AVORA and Properties** — status, typology, amenities, location, “first address” wording and enquiry routes should be confirmed by the project team. The note “Images are artist’s impressions…” is included on the home gallery.
 5. **Photography** — AVORA visuals are cropped and colour-graded from the supplied `EXTERIOR.pdf` renders. Food & beverage and hospitality photographs are royalty-free Unsplash images used as placeholders; swap them for owned photography when available. `_brand/` contains the original supplied logo files.
 6. **Share image** — `assets/img/og-image.jpg` (1200×630). Social platforms require an absolute URL for `og:image` once the site has a domain.
 
@@ -81,7 +83,8 @@ The application form is intentionally backend-free: it validates the fields, the
 - Full-screen mobile navigation with keyboard `Esc` support and scroll locking.
 - Reveal-on-scroll for text and images (disabled automatically for `prefers-reduced-motion`).
 - Parallax on the home hero (desktop only).
-- Sticky section nav with scrollspy on Verticals.
+- Sticky section nav with scrollspy on Verticals, including the Properties collection tab.
+- Property card with AVORA details, amenity strip and direct enquiry actions.
 - Accessible AVORA gallery lightbox: arrow keys, `Esc`, focus handling, captions.
 - FAQ-style role accordions using native `<details>`.
 - Responsive `srcset` variants for the largest images.

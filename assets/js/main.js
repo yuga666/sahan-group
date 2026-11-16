@@ -208,6 +208,8 @@
     function render() {
       var item = items[index];
       if (!item) return;
+      imgEl.removeAttribute('srcset');
+      imgEl.removeAttribute('sizes');
       imgEl.src = item.src;
       imgEl.alt = item.alt;
       capEl.textContent = item.caption;
