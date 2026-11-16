@@ -273,6 +273,92 @@
     });
   }
 
+
+  /* ------------------------------------------------------------------
+     Swimlane carousels (Journal, social)
+  ------------------------------------------------------------------ */
+  doc.querySelectorAll('[data-swimlane]').forEach(function (root) {
+    var track = root.querySelector('[data-swimlane-track]');
+    var prev = root.querySelector('[data-swimlane-prev]');
+    var next = root.querySelector('[data-swimlane-next]');
+    var dotsWrap = root.querySelector('[data-swimlane-dots]');
+    if (!track) return;
+
+    var items = Array.prototype.slice.call(track.children);
+    var dots = [];
+    var raf = null;
+
+    function gap() {
+      var styles = window.getComputedStyle(track);
+      return parseFloat(styles.columnGap || styles.gap || '0') || 0;
+    }
+
+    function stepSize() {
+      var first = track.firstElementChild;
+      if (!first) return track.clientWidth;
+      return first.getBoundingClientRect().width + gap();
+    }
+
+    function maxScroll() {
+      return Math.max(0, track.scrollWidth - track.clientWidth);
+    }
+
+    function scrollToIndex(i) {
+      var target = Math.min(i * stepSize(), maxScroll());
+      track.scrollTo({ left: target, behavior: reduceMotion ? 'auto' : 'smooth' });
+    }
+
+    function activeIndex() {
+      var size = stepSize();
+      if (!size) return 0;
+      return Math.round(track.scrollLeft / size);
+    }
+
+    function update() {
+      var max = maxScroll();
+      if (prev) prev.disabled = track.scrollLeft <= 2;
+      if (next) next.disabled = track.scrollLeft >= max - 2;
+      var current = activeIndex();
+      dots.forEach(function (dot, i) {
+        dot.classList.toggle('is-active', i === current);
+        dot.setAttribute('aria-current', i === current ? 'true' : 'false');
+      });
+      root.classList.toggle('is-static', max < 4);
+    }
+
+    if (dotsWrap && items.length) {
+      items.forEach(function (_, i) {
+        var dot = doc.createElement('button');
+        dot.type = 'button';
+        dot.className = 'swimlane__dot';
+        dot.setAttribute('aria-label', 'Go to item ' + (i + 1));
+        dot.addEventListener('click', function () { scrollToIndex(i); });
+        dotsWrap.appendChild(dot);
+        dots.push(dot);
+      });
+    }
+
+    if (prev) prev.addEventListener('click', function () { scrollToIndex(Math.max(0, activeIndex() - 1)); });
+    if (next) next.addEventListener('click', function () { scrollToIndex(activeIndex() + 1); });
+
+    track.addEventListener('scroll', function () {
+      if (raf) return;
+      raf = window.requestAnimationFrame(function () {
+        raf = null;
+        update();
+      });
+    }, { passive: true });
+
+    track.addEventListener('keydown', function (event) {
+      if (event.key !== 'ArrowRight' && event.key !== 'ArrowLeft') return;
+      event.preventDefault();
+      scrollToIndex(activeIndex() + (event.key === 'ArrowRight' ? 1 : -1));
+    });
+
+    window.addEventListener('resize', update);
+    update();
+  });
+
   /* ------------------------------------------------------------------
      Careers form — composes an email, no backend required
   ------------------------------------------------------------------ */

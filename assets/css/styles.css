@@ -40,6 +40,12 @@
   --container: 1340px;
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-soft: cubic-bezier(0.33, 1, 0.68, 1);
+
+  /* rounded system — large, soft geometry in the spirit of Unilever's card masks */
+  --radius-card: 1.5rem;
+  --radius-mask: clamp(2.25rem, 3.6vw, 3.75rem);
+  --radius-section: clamp(2.75rem, 6vw, 6rem);
+  --swimlane-gap: clamp(1rem, 1.8vw, 1.75rem);
 }
 
 /* ---------- reset ---------- */
@@ -245,9 +251,9 @@ h1 em, h2 em, h3 em, .accent {
   justify-content: space-between;
   gap: 1.5rem;
   min-height: 52px;
-  padding: 1rem 1.4rem 1rem 1.6rem;
+  padding: 1rem 1.15rem 1rem 1.65rem;
   border: 1px solid var(--btn-bd);
-  border-radius: 2px;
+  border-radius: 999px;
   background: var(--btn-bg);
   color: var(--btn-fg);
   font-family: var(--sans);
@@ -359,6 +365,7 @@ h1 em, h2 em, h3 em, .accent {
 .media {
   position: relative;
   overflow: hidden;
+  border-end-end-radius: var(--radius-card);
   background: var(--forest);
 }
 .media img {
@@ -1801,6 +1808,339 @@ body.is-loaded .hero__title .line:nth-child(3) > span { transition-delay: 0.35s;
 }
 @media (max-width: 720px) {
   .property-card__actions .btn { width: 100%; }
+}
+
+
+/* ==========================================================================
+   Rounded sections & masks
+   Large bottom-right curves on sections and cards, in the spirit of Unilever's
+   soft, rounded content blocks. The next section shows through each corner.
+   ========================================================================== */
+.section--round {
+  position: relative;
+  border-end-end-radius: var(--radius-section);
+  overflow: clip;
+  isolation: isolate;
+}
+.hero { border-end-end-radius: var(--radius-section); }
+.page-hero { border-end-end-radius: var(--radius-section); }
+.project { border-end-end-radius: var(--radius-section); }
+
+.vcard__media { border-end-end-radius: var(--radius-mask); }
+.gallery__item { border-end-end-radius: var(--radius-card); }
+.property-card { border-end-end-radius: var(--radius-mask); }
+.property-card__media { border-end-end-radius: var(--radius-mask); }
+.split__media .media { border-end-end-radius: var(--radius-mask); }
+.careers-grid__media .media:first-child { border-end-end-radius: var(--radius-mask); }
+.cta-media { border-end-end-radius: var(--radius-section); }
+
+/* ==========================================================================
+   Section header — eyebrow + heading, Unilever-style rhythm
+   ========================================================================== */
+.section-head--split {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1.5rem 3rem;
+  flex-wrap: wrap;
+}
+.section-head--split .section-head__main { flex: 1 1 34rem; }
+
+/* ==========================================================================
+   Swimlane carousel
+   ========================================================================== */
+.swimlane { position: relative; }
+.swimlane__head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1.5rem 3rem;
+  flex-wrap: wrap;
+  margin-bottom: clamp(1.75rem, 3vw, 2.75rem);
+}
+.swimlane__controls { display: flex; align-items: center; gap: 0.6rem; }
+.swimlane__btn {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  color: var(--ink);
+  background: transparent;
+  transition: background 0.35s var(--ease), color 0.35s var(--ease),
+              border-color 0.35s var(--ease), opacity 0.3s;
+}
+.swimlane__btn .ico { width: 16px; height: 16px; }
+.swimlane__btn:hover:not(:disabled) { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+.swimlane__btn:disabled { opacity: 0.3; cursor: not-allowed; }
+.on-dark .swimlane__btn,
+.section--ink .swimlane__btn { border-color: var(--line-light); color: var(--paper); }
+.on-dark .swimlane__btn:hover:not(:disabled),
+.section--ink .swimlane__btn:hover:not(:disabled) { background: var(--paper); border-color: var(--paper); color: var(--ink); }
+
+.swimlane__track {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: calc((100% - var(--swimlane-gap) * 2) / 3);
+  gap: var(--swimlane-gap);
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  padding-bottom: 0.5rem;
+}
+.swimlane__track::-webkit-scrollbar { display: none; }
+.swimlane__track > * { scroll-snap-align: start; }
+.swimlane__track:focus-visible { outline: 2px solid var(--gold); outline-offset: 6px; }
+
+.swimlane__dots { display: flex; justify-content: center; gap: 0.1rem; margin-top: 1.35rem; }
+.swimlane__dot {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border-radius: 50%;
+  background: transparent;
+}
+.swimlane__dot::before {
+  content: "";
+  display: block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--line);
+  transition: background 0.3s, transform 0.3s var(--ease);
+}
+.swimlane__dot.is-active::before { background: var(--gold-label); transform: scale(1.3); }
+.on-dark .swimlane__dot::before,
+.section--ink .swimlane__dot::before { background: rgba(246, 242, 233, 0.3); }
+.on-dark .swimlane__dot.is-active::before,
+.section--ink .swimlane__dot.is-active::before { background: var(--gold); }
+
+/* ==========================================================================
+   Journal cards — tag pill, masked media, underlined title
+   ========================================================================== */
+.ncard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--ink);
+  color: var(--paper);
+  border-end-end-radius: var(--radius-mask);
+  overflow: hidden;
+  isolation: isolate;
+}
+.ncard__media {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 16 / 11;
+  border-end-end-radius: var(--radius-mask);
+  background: var(--forest);
+}
+.ncard__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 1.4s var(--ease);
+}
+.ncard:hover .ncard__media img { transform: scale(1.045); }
+.ncard__body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 0.75rem;
+  padding: clamp(1.25rem, 2vw, 1.75rem);
+}
+.ncard__title {
+  font-family: var(--sans);
+  font-size: clamp(1.0625rem, 1.15vw, 1.25rem);
+  font-weight: 500;
+  line-height: 1.32;
+  letter-spacing: -0.01em;
+  color: var(--paper);
+}
+.ncard__title a::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+}
+.ncard__title span {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-size: 100% 1px;
+  background-repeat: no-repeat;
+  background-position: 0 calc(100% - 0.02em);
+  transition: background-size 0.45s var(--ease), opacity 0.3s;
+}
+.ncard:hover .ncard__title a::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+}
+.ncard__title span { background-size: 0 1px; }
+.ncard__date {
+  margin-top: auto;
+  padding-top: 0.4rem;
+  font-size: 0.6875rem;
+  letter-spacing: 0.08em;
+  color: rgba(246, 242, 233, 0.55);
+}
+.ncard__arrow {
+  position: absolute;
+  right: 1.1rem;
+  bottom: 1.05rem;
+  color: var(--gold);
+  opacity: 0;
+  transform: translateX(-6px);
+  transition: opacity 0.35s var(--ease), transform 0.35s var(--ease);
+}
+.ncard:hover .ncard__arrow { opacity: 1; transform: none; }
+.ncard:focus-within { outline: 2px solid var(--gold); outline-offset: 4px; }
+
+/* tag pill — flush to the media edge like Unilever's article tags */
+.tag {
+  position: absolute;
+  top: 1.05rem;
+  left: 0;
+  z-index: 2;
+  padding: 0.45rem 0.95rem 0.45rem 0.85rem;
+  border-radius: 0 999px 999px 0;
+  background: var(--gold);
+  color: var(--ink);
+  font-size: 0.5625rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+/* ==========================================================================
+   Commitments — four pillars with masked imagery
+   ========================================================================== */
+.pillars {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--swimlane-gap);
+  margin-top: clamp(2.5rem, 4vw, 3.5rem);
+}
+.pillar { display: flex; flex-direction: column; }
+.pillar__media {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 4 / 5;
+  border-start-start-radius: var(--radius-card);
+  border-start-end-radius: var(--radius-card);
+  border-end-end-radius: var(--radius-mask);
+  background: var(--forest);
+}
+.pillar__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 1.5s var(--ease), filter 0.6s var(--ease);
+}
+.pillar:hover .pillar__media img { transform: scale(1.045); }
+.pillar__body { padding-top: 1.35rem; }
+.pillar__index {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.5625rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  color: var(--gold-label);
+}
+.pillar h3 {
+  font-family: var(--sans);
+  font-size: clamp(1.1rem, 1.25vw, 1.3rem);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+}
+.pillar h3 span {
+  display: block;
+  margin-top: 0.35rem;
+  height: 1px;
+  width: 2rem;
+  background: var(--gold);
+}
+.pillar p {
+  margin-top: 0.7rem;
+  font-size: 0.9rem;
+  line-height: 1.7;
+  color: var(--ink-60);
+}
+
+/* ==========================================================================
+   Social tiles
+   ========================================================================== */
+.social-track { grid-auto-columns: calc((100% - var(--swimlane-gap) * 4) / 5); }
+.stile {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: zoom-in;
+}
+.stile__media {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 1 / 1;
+  border-end-end-radius: var(--radius-mask);
+  background: var(--forest);
+}
+.stile__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 1.4s var(--ease);
+}
+.stile:hover .stile__media img { transform: scale(1.05); }
+.stile__label {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.45rem;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: var(--paper);
+}
+.stile__label .ico { width: 13px; height: 13px; margin-top: 0.22rem; color: var(--gold); flex: none; }
+
+/* ==========================================================================
+   Responsive — new modules
+   ========================================================================== */
+@media (max-width: 1180px) {
+  .swimlane__track { grid-auto-columns: calc((100% - var(--swimlane-gap)) / 2); }
+  .social-track { grid-auto-columns: calc((100% - var(--swimlane-gap) * 2) / 3); }
+}
+@media (max-width: 1024px) {
+  .pillars { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 860px) {
+  .property-card { border-end-end-radius: var(--radius-card); }
+  .social-track { grid-auto-columns: calc((100% - var(--swimlane-gap)) / 2); }
+}
+@media (max-width: 720px) {
+  :root { --radius-mask: 2.5rem; --radius-section: 2.75rem; }
+  .swimlane__track,
+  .social-track { grid-auto-columns: 82%; }
+  .swimlane__head { align-items: flex-start; }
+  .swimlane__controls { order: 2; }
+  .pillars { grid-template-columns: 1fr; }
+  .pillar__media { aspect-ratio: 3 / 2; }
+  .section--round { border-end-end-radius: var(--radius-section); }
+}
+@media (max-width: 480px) {
+  .swimlane__track,
+  .social-track { grid-auto-columns: 88%; }
 }
 
 /* ==========================================================================
