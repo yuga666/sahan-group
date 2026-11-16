@@ -57,7 +57,7 @@ assets/css/styles.css      Design system, layout, components, responsive rules
 assets/js/main.js          Navigation, reveal-on-scroll, scrollspy, count-up, lightbox, forms
 assets/fonts/fonts.css     Helvetica Neue is system; Inter, Cormorant Garamond and Roboto Slab are embedded as data URIs
 assets/img/                Photography, AVORA renders, company logos, favicon, social image
-assets/img/brand/          Pure Springs, Sahan Homes, Cassandra and Invest Lanka logos
+assets/img/brand/          Sahan Homes, Kaze, Pure Springs, Cassandra and Invest Lanka logos
 _brand/                    Original supplied group logo files (PNG + SVG)
 netlify.toml               Publish settings, security headers and CSP for Netlify
 robots.txt / sitemap.xml   Crawl rules and page list (domain placeholder — see below)

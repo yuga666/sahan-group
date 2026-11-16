@@ -2241,6 +2241,21 @@ body.is-loaded .hero__title .line:nth-child(3) > span { transition-delay: 0.35s;
 .logo-chip img { width: auto; height: auto; max-height: 46px; max-width: 190px; object-fit: contain; }
 .logo-chip--dark { background: var(--forest-deep); border-color: rgba(246, 242, 233, 0.16); }
 .logo-chip--wide img { max-width: 230px; }
+.logo-chip--art {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  border-radius: 12px;
+  overflow: hidden;
+  min-height: 0;
+}
+.logo-chip--art img {
+  width: 240px;
+  height: auto;
+  max-height: none;
+  max-width: 100%;
+  border-radius: 12px;
+}
 
 /* typographic wordmark where no logo mark exists */
 .wordmark {
@@ -2316,7 +2331,7 @@ body.is-loaded .hero__title .line:nth-child(3) > span { transition-delay: 0.35s;
 
 .company-logos {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: clamp(0.75rem, 1.5vw, 1.25rem);
   padding-block: clamp(1.5rem, 3vw, 2.25rem);
   border-block: 1px solid var(--line);
@@ -2332,6 +2347,13 @@ body.is-loaded .hero__title .line:nth-child(3) > span { transition-delay: 0.35s;
 }
 .logo-tile--dark { background: var(--forest-deep); border-color: rgba(246, 242, 233, 0.16); }
 .logo-tile img { max-height: 92px; max-width: 100%; width: auto; object-fit: contain; }
+.logo-tile img.logo-round {
+  width: 116px;
+  height: 116px;
+  max-height: none;
+  border-radius: 50%;
+  object-fit: cover;
+}
 
 /* AVORA / properties page */
 .factgrid {
@@ -3184,11 +3206,13 @@ body.is-loaded .hero__title .line:nth-child(3) > span { transition-delay: 0.35s;
 }
 
 @media (max-width: 1024px) {
+  .company-logos { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .ventures__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .standards { grid-template-columns: 1fr 1fr; }
   .investors__grid { grid-template-columns: 1fr; }
 }
 @media (max-width: 720px) {
+  .company-logos { grid-template-columns: 1fr 1fr; }
   .ventures__grid { grid-template-columns: 1fr 1fr; }
   .motto__line { max-width: 18ch; }
   .vision { grid-template-columns: 1fr; }
@@ -3533,7 +3557,7 @@ body.is-loaded .hero__title .line:nth-child(3) > span { transition-delay: 0.35s;
   .careers-grid { grid-template-columns: 1fr; }
   .careers-grid__media { max-width: 640px; margin-inline: auto; }
   .chapter { grid-template-columns: 4rem 1fr; }
-  .chapter p { grid-column: 2; }
+  .chapter > div { grid-column: 2; }
   .factstrip { grid-template-columns: 1fr 1fr; }
   .factstrip > div:nth-child(2) { border-right: 0; }
   .factstrip > div:nth-child(-n + 2) { border-bottom: 1px solid var(--line); }
@@ -3575,6 +3599,9 @@ body.is-loaded .hero__title .line:nth-child(3) > span { transition-delay: 0.35s;
   .hero__foot { flex-direction: column; align-items: flex-start; gap: 0.85rem; padding-block: 1rem; }
   .hero__meta { gap: 0.55rem; font-size: 0.5rem; letter-spacing: 0.16em; }
   .hero__meta li { gap: 0.55rem; }
+  .chapter { grid-template-columns: 1fr; gap: 0.4rem; padding-block: 1.5rem; }
+  .chapter > div { grid-column: 1; }
+  .chapter h3 { margin-top: 0.15rem; }
   .scroll-cue { display: none; }
   .page-hero { min-height: 62svh; }
   .intro-media__frame::before,
