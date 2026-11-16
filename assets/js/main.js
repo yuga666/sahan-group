@@ -43,7 +43,7 @@
     }
 
     if (!reduceMotion) {
-      var media = doc.querySelector('.hero__media img');
+      var media = doc.querySelector('.hero__media:not(.hero__media--montage) img');
       if (media && window.innerWidth > 980 && y < window.innerHeight) {
         media.style.translate = '0 ' + (y * 0.12).toFixed(2) + 'px';
       }
@@ -358,6 +358,52 @@
     window.addEventListener('resize', update);
     update();
   });
+
+
+  /* ------------------------------------------------------------------
+     Count-up proof numbers
+  ------------------------------------------------------------------ */
+  var counters = doc.querySelectorAll('[data-count]');
+
+  if (counters.length) {
+    var easeOut = function (t) { return 1 - Math.pow(1 - t, 3); };
+
+    var runCounter = function (el) {
+      var target = parseFloat(el.getAttribute('data-count')) || 0;
+      var suffix = el.getAttribute('data-suffix') || '';
+      var duration = 1500;
+      var start = null;
+
+      var tick = function (now) {
+        if (start === null) start = now;
+        var progress = Math.min((now - start) / duration, 1);
+        el.textContent = Math.round(easeOut(progress) * target) + suffix;
+        if (progress < 1) window.requestAnimationFrame(tick);
+        else el.textContent = target + suffix;
+      };
+
+      window.requestAnimationFrame(tick);
+    };
+
+    if (reduceMotion || !('IntersectionObserver' in window)) {
+      counters.forEach(function (el) {
+        el.textContent = el.getAttribute('data-count') + (el.getAttribute('data-suffix') || '');
+      });
+    } else {
+      var countObserver = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (!entry.isIntersecting) return;
+          runCounter(entry.target);
+          countObserver.unobserve(entry.target);
+        });
+      }, { threshold: 0.5 });
+
+      counters.forEach(function (el) {
+        el.textContent = '0' + (el.getAttribute('data-suffix') || '');
+        countObserver.observe(el);
+      });
+    }
+  }
 
   /* ------------------------------------------------------------------
      Forms — compose an email, no backend required
