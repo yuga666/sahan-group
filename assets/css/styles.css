@@ -3729,3 +3729,229 @@ input[type="file"] { color: var(--text); }
   .hero, .page-hero { min-height: auto; color: #000; background: #fff; }
   .hero__media, .page-hero__media, .project__hero { display: none; }
 }
+
+/* ==========================================================================
+   Scroll motion — scrubbed parallax, opening frames, heading masks,
+   drawn labels and list progress. main.js sets --p / --e / --p2 as an
+   element travels through the viewport. Reduced motion skips all of it.
+   ========================================================================== */
+
+/* Parallax: the photo drifts slower than the page inside its frame. */
+.js [data-parallax] img {
+  scale: 1.14;
+  translate: 0 calc((var(--p, 0.5) - 0.5) * -12%);
+  will-change: translate;
+}
+
+/* Feature photos open out from an inset, rounded frame as they arrive. */
+.js [data-expand] {
+  clip-path: none;
+  transform: none;
+  transition: none;
+}
+.js [data-expand] .media {
+  clip-path: inset(
+    calc((1 - var(--e, 1)) * 7%)
+    calc((1 - var(--e, 1)) * 9%)
+    round calc((1 - var(--e, 1)) * 28px)
+  );
+}
+.js [data-expand] .media img {
+  scale: calc(1.18 - var(--e, 1) * 0.18);
+  transition: none;
+}
+
+/* Headings rise out of a mask. */
+.js .mask-rise {
+  clip-path: inset(0 0 100% 0);
+  transform: translateY(0.45em);
+  transition: clip-path 1.15s var(--ease), transform 1.15s var(--ease);
+  transition-delay: var(--d, 0s);
+}
+.js .mask-rise.is-visible { clip-path: inset(-0.2em -0.2em -0.25em -0.2em); transform: none; }
+
+/* Section labels: the gold rule draws in. */
+.js .label::before {
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.9s var(--ease) 0.1s;
+}
+.js .label.is-drawn::before { transform: scaleX(1); }
+
+/* Lists fill their top rule in gold as you read down them. */
+.timeline,
+.principles,
+.roles { position: relative; }
+.timeline::before,
+.principles::before,
+.roles::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: -1px;
+  width: 100%;
+  height: 1px;
+  background: var(--gold);
+  transform: scaleX(var(--p2, 0));
+  transform-origin: left;
+  z-index: 1;
+  pointer-events: none;
+}
+.chapter__num,
+.principle__num { transition: color 0.5s var(--ease), transform 0.6s var(--ease); display: inline-block; }
+.is-current > .chapter__num,
+.is-current > .principle__num { color: var(--gold); transform: translateX(0.35rem); }
+
+/* Header steps out of the way while reading down, returns on scroll up. */
+.site-header { transition: height 0.5s var(--ease), background 0.5s var(--ease), color 0.5s var(--ease),
+  border-color 0.5s var(--ease), transform 0.55s var(--ease); }
+.site-header.is-tucked { transform: translateY(-100%); }
+.subnav { transition: top 0.55s var(--ease); }
+body.header-tucked .subnav { top: 0; }
+
+/* Swipe rail progress (mobile carousels). */
+.rail-progress { display: none; }
+
+/* Centred grid items need an explicit width or they collapse while their
+   lazy images are still loading. */
+.split__media,
+.vertical__media,
+.careers-grid__media { width: 100%; }
+
+@media (prefers-reduced-motion: reduce) {
+  .js [data-parallax] img,
+  .js [data-expand] .media img { translate: none; scale: none; }
+  .js [data-expand] .media { clip-path: none; }
+  .js .mask-rise { clip-path: none; transform: none; }
+  .js .label::before { transform: none; }
+  .site-header.is-tucked { transform: none; }
+}
+
+/* ==========================================================================
+   Mobile density — more air, fewer repeats, swipeable rows
+   ========================================================================== */
+@media (max-width: 720px) {
+  body { font-size: 0.95rem; line-height: 1.66; }
+
+  /* rhythm */
+  .section { padding-block: 3.75rem; }
+  .section--tight { padding-block: 3rem; }
+  .section-head { padding-top: 1rem; margin-bottom: 2rem; }
+  .section-head .label { margin-bottom: 1.1rem; }
+  .section-head__main { gap: 0.9rem; }
+  .section-head__note { font-size: 0.9rem; line-height: 1.65; }
+  .display-2 { font-size: clamp(2rem, 8.8vw, 2.5rem); }
+  .label { gap: 0.7rem; }
+  .label::before { width: 20px; }
+
+  .split__body,
+  .vertical__body { gap: 0.85rem; }
+  .split__body p,
+  .vertical__body p,
+  .chapter p,
+  .cta-panel p { font-size: 0.9rem; line-height: 1.68; }
+
+  /* hero: the bottom strip repeats the eyebrow, so it goes */
+  .hero__foot { display: none; }
+  .hero__inner { padding-bottom: 2.25rem; }
+  .hero__lede { font-size: 0.92rem; line-height: 1.6; }
+  .hero__actions { gap: 0.6rem; }
+  .page-hero { min-height: 56svh; padding-bottom: 2.25rem; }
+  .page-hero__lede { margin-top: 1rem; font-size: 0.92rem; line-height: 1.6; }
+
+  /* swipe rails: sector doors, vertical photo sets, property gallery */
+  .doors,
+  .vertical__media,
+  .vertical--alt .vertical__media,
+  .gallery {
+    display: grid;
+    grid-auto-flow: column;
+    grid-template-columns: none;
+    grid-auto-columns: 80%;
+    gap: 0.85rem;
+    height: auto;
+    margin-inline: calc(var(--gutter) * -1);
+    padding-inline: var(--gutter);
+    scroll-padding-inline: var(--gutter);
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .doors::-webkit-scrollbar,
+  .vertical__media::-webkit-scrollbar,
+  .gallery::-webkit-scrollbar { display: none; }
+  .doors > *,
+  .vertical__media > *,
+  .gallery > * { scroll-snap-align: start; }
+  .door { min-height: 400px; }
+  .vertical__media .media:nth-child(n),
+  .vertical--alt .vertical__media .media:nth-child(n),
+  .vertical__media--wide .media:first-child,
+  .vertical__media .media:nth-child(2):last-child { grid-column: auto; aspect-ratio: 4 / 3; }
+  .js .vertical__media.reveal-media { clip-path: none; transform: none; }
+  .vertical__media { width: calc(100% + var(--gutter) * 2); max-width: none; }
+  .gallery__item:nth-child(n) { grid-column: auto; aspect-ratio: 4 / 5; }
+  .rail-progress {
+    display: block;
+    position: relative;
+    height: 1px;
+    margin-top: 1.1rem;
+    background: var(--line);
+    overflow: hidden;
+  }
+  .rail-progress span {
+    position: absolute;
+    inset: 0;
+    background: var(--gold);
+    transform-origin: left;
+    transform: translateX(var(--rx, 0%)) scaleX(var(--rw, 0.33));
+  }
+
+  /* home */
+  .doors-section { padding-block: 3rem; }
+  .ventures__grid,
+  .ventures__grid--five { grid-template-columns: 1fr 1fr; }
+  .venture a { padding: 0.85rem; gap: 0.2rem; }
+  .venture__name { font-size: 0.85rem; }
+  .venture__sector { font-size: 0.7rem; }
+  .venture .ico { margin-top: 0.4rem; }
+  .founder__portrait { max-width: 220px; }
+  .closing__map { min-height: 240px; }
+
+  /* lists */
+  .arrow-list a,
+  .arrow-list span { padding: 0.7rem 0; font-size: 0.9rem; }
+  .chapter { padding-block: 1.15rem; }
+  .values .value { padding: 1.25rem; }
+  .value h3 { margin-top: 0.85rem; }
+  .benefit { padding: 1.25rem; }
+  .benefit__ico { margin-bottom: 0.9rem; }
+  .quote-band { padding-block: 4rem; }
+
+  /* about / verticals / careers */
+  .split { gap: 2.25rem; }
+  .split__media .media { aspect-ratio: 1 / 1; }
+  .vertical > .container { gap: 1.75rem; }
+  .vertical__services { margin-top: 1.4rem; }
+  .vertical__actions { margin-top: 1.4rem; gap: 1.1rem; }
+  .careers-grid { gap: 2.25rem; }
+
+  /* CTA + footer */
+  .cta-panel { padding-block: 3.25rem; gap: 1.1rem; }
+  .cta-media { min-height: 240px; }
+  .site-footer { padding-top: 3rem; }
+  .footer-top { gap: 2.25rem; padding-bottom: 2.25rem; }
+  .footer-brand img { width: 132px; }
+  .footer-brand p { margin-top: 1rem; font-size: 0.85rem; }
+  .footer-col h3 { margin-bottom: 0.7rem; }
+  .footer-col ul { gap: 0.35rem; }
+  .footer-col a,
+  .footer-col address { font-size: 0.85rem; }
+}
+
+@media (max-width: 480px) {
+  .footer-cols { grid-template-columns: 1fr 1fr; gap: 1.75rem 1.25rem; }
+  .footer-col:last-child { grid-column: 1 / -1; }
+}
