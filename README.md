@@ -71,18 +71,22 @@ preview/                   Reference screenshots used in this README and for cli
 
 | Token | Value | Use |
 | --- | --- | --- |
-| `--ink` | `#1c241e` | Graphite Pine — primary text and dark sections |
+| `--bg` | `#3f4a42` | Highland Moss — page and content background |
+| `--bg-alt` | `#364139` | Alternate content band |
+| `--bg-raised` | `#48554c` | Raised surfaces such as badges |
+| `--text` | `#f0e7d6` | Warm Cashmere — primary content text |
+| `--ink` | `#1c241e` | Graphite Pine — deep sections and dark buttons |
 | `--forest` | `#283229` | Executive Pine — panels |
 | `--forest-deep` | `#141915` | Midnight Canopy — footer and deepest surfaces |
-| `--sage` / `--sage-deep` | `#6f7a6e` / `#3f4a42` | Meadow Mist / Highland Moss — secondary text and labels |
+| `--sage` / `--sage-deep` | `#6f7a6e` / `#b9c5ba` | Meadow Mist / light Highland Moss — secondary text and labels on moss |
 | `--gold` | `#c6b08a` | Golden Oak — brand gold on dark surfaces and buttons |
 | `--gold-ink` | `#a8874f` | Accessible gold accent on paper |
 | `--gold-label` | `#8e7344` | Small gold labels on paper |
 | `--sand` / `--cream` | `#e7d9bf` / `#efe4ce` | Warm Cashmere accents and gradients |
 | `--hearthstone` | `#a79a84` | Secondary neutral |
-| `--paper` | `#f6f2e9` | Warm ivory page background |
+| `--paper` | `#f6f2e9` | Warm ivory — text on dark surfaces and brand plates |
 
-Visual identity system designed by Imanka Wijesinghe (per the manifesto). Type follows the manifesto: **Helvetica Neue** is the core brand typeface for headlines, body, navigation and UI, with **Inter** as the self-hosted fallback. **Cormorant Garamond** remains as an editorial accent for statements, pull quotes and the founder quote — a deliberate house style rather than a manifesto font. **Optima** is the Sahan Homes/property accent and **Roboto Slab** is used for the Sahan Engineering wordmark and technical notes. **GC Vank** is a licensed specialty face and is not bundled. Company logos are supplied artwork and set on neutral plates so their original backgrounds stay intact.
+Visual identity system designed by Imanka Wijesinghe (per the manifesto). Content surfaces are **Highland Moss (#3F4A42)** with Warm Cashmere text and Golden Oak accents; dark sections step down to Executive Pine, Midnight Canopy and Graphite Pine for rhythm. Type follows the manifesto: **Helvetica Neue** is the core brand typeface for headlines, body, navigation and UI, with **Inter** as the self-hosted fallback. **Cormorant Garamond** remains as an editorial accent for statements, pull quotes and the founder quote — a deliberate house style rather than a manifesto font. **Optima** is the Sahan Homes/property accent and **Roboto Slab** is used for the Sahan Engineering wordmark and technical notes. **GC Vank** is a licensed specialty face and is not bundled. Company logos are supplied artwork and set on neutral plates so their original backgrounds stay intact.
 
 ---
 
