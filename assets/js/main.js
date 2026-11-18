@@ -20,6 +20,52 @@
     body.classList.add('is-loaded');
   });
 
+
+  /* ------------------------------------------------------------------
+     Scroll colour — interpolate the page surface between brand greens
+  ------------------------------------------------------------------ */
+  var root = doc.documentElement;
+  var metaTheme = doc.querySelector('meta[name="theme-color"]');
+  var colourStops = [
+    { at: 0,    rgb: [63, 74, 66] },   /* Highland Moss */
+    { at: 0.35, rgb: [54, 65, 57] },
+    { at: 0.7,  rgb: [45, 55, 48] },
+    { at: 1,    rgb: [40, 50, 41] }    /* Executive Pine */
+  ];
+  var lastRatio = -1;
+
+  function mixColour(ratio) {
+    for (var i = 0; i < colourStops.length - 1; i++) {
+      var a = colourStops[i];
+      var b = colourStops[i + 1];
+      if (ratio <= b.at) {
+        var t = (ratio - a.at) / (b.at - a.at || 1);
+        return [
+          Math.round(a.rgb[0] + (b.rgb[0] - a.rgb[0]) * t),
+          Math.round(a.rgb[1] + (b.rgb[1] - a.rgb[1]) * t),
+          Math.round(a.rgb[2] + (b.rgb[2] - a.rgb[2]) * t)
+        ];
+      }
+    }
+    return colourStops[colourStops.length - 1].rgb;
+  }
+
+  function applyScrollColour(ratio) {
+    if (Math.abs(ratio - lastRatio) < 0.002) return;
+    lastRatio = ratio;
+
+    var c = mixColour(ratio);
+    var alt = c.map(function (v) { return Math.max(0, Math.round(v - 9)); });
+    root.style.setProperty('--bg', 'rgb(' + c.join(', ') + ')');
+    root.style.setProperty('--bg-alt', 'rgb(' + alt.join(', ') + ')');
+
+    if (metaTheme) {
+      metaTheme.setAttribute('content', '#' + c.map(function (v) {
+        return ('0' + v.toString(16)).slice(-2);
+      }).join(''));
+    }
+  }
+
   /* ------------------------------------------------------------------
      Header state + scroll progress
   ------------------------------------------------------------------ */
@@ -53,10 +99,16 @@
       }
     }
 
+    var max = doc.documentElement.scrollHeight - window.innerHeight;
+    var ratio = max > 0 ? Math.min(Math.max(y / max, 0), 1) : 0;
+
     if (progress) {
-      var max = doc.documentElement.scrollHeight - window.innerHeight;
-      var ratio = max > 0 ? Math.min(y / max, 1) : 0;
       progress.style.transform = 'scaleX(' + ratio + ')';
+    }
+
+    /* Scroll colour — the content surface drifts through the brand greens. */
+    if (!reduceMotion) {
+      applyScrollColour(ratio);
     }
 
     if (!reduceMotion) {
@@ -302,23 +354,41 @@
     }
   });
 
-  if (spyTargets.length && 'IntersectionObserver' in window) {
-    var spy = new IntersectionObserver(function (entries) {
-      entries.forEach(function (entry) {
-        if (!entry.isIntersecting) return;
-        spyTargets.forEach(function (pair) {
-          var active = pair.section === entry.target;
-          pair.link.classList.toggle('is-active', active);
-          if (active) {
-            pair.link.setAttribute('aria-current', 'true');
-          } else {
-            pair.link.removeAttribute('aria-current');
-          }
-        });
-      });
-    }, { rootMargin: '-25% 0px -60% 0px', threshold: 0 });
+  if (spyTargets.length) {
+    var spyQueued = false;
 
-    spyTargets.forEach(function (pair) { spy.observe(pair.section); });
+    var updateSpy = function () {
+      var line = window.innerHeight * 0.34;
+      var active = spyTargets[0];
+
+      spyTargets.forEach(function (pair) {
+        if (pair.section.getBoundingClientRect().top <= line) active = pair;
+      });
+
+      if (window.innerHeight + window.scrollY >= doc.documentElement.scrollHeight - 4) {
+        active = spyTargets[spyTargets.length - 1];
+      }
+
+      spyTargets.forEach(function (pair) {
+        var on = pair === active;
+        pair.link.classList.toggle('is-active', on);
+        if (on) pair.link.setAttribute('aria-current', 'true');
+        else pair.link.removeAttribute('aria-current');
+      });
+    };
+
+    var queueSpy = function () {
+      if (spyQueued) return;
+      spyQueued = true;
+      window.requestAnimationFrame(function () {
+        spyQueued = false;
+        updateSpy();
+      });
+    };
+
+    window.addEventListener('scroll', queueSpy, { passive: true });
+    window.addEventListener('resize', queueSpy);
+    updateSpy();
   }
 
   /* ------------------------------------------------------------------

@@ -2243,6 +2243,8 @@ body.is-loaded .hero__title .line:nth-child(3) > span { transition-delay: 0.35s;
   border-radius: 14px;
 }
 .logo-chip img { width: auto; height: auto; max-height: 46px; max-width: 190px; object-fit: contain; }
+.logo-chip--tall { padding: 0.7rem 1rem; }
+.logo-chip--tall img { max-height: 84px; max-width: 150px; }
 .logo-chip--dark { background: var(--forest-deep); border-color: rgba(246, 242, 233, 0.16); }
 .logo-chip--wide img { max-width: 230px; }
 .logo-chip--art {
@@ -2281,15 +2283,16 @@ body.is-loaded .hero__title .line:nth-child(3) > span { transition-delay: 0.35s;
   text-transform: uppercase;
 }
 
-/* Sahan Engineering accent type, per the brand manifesto */
-#engineering .wordmark--caps {
+/* Sahan Engineering accent type, per the brand guide */
+#real-estate .wordmark--caps {
   font-family: var(--slab);
   font-weight: 600;
-  font-size: clamp(1.2rem, 1.8vw, 1.5rem);
-  letter-spacing: 0.02em;
+  font-size: clamp(1.15rem, 1.7vw, 1.4rem);
+  letter-spacing: 0.005em;
+  line-height: 1.35;
   text-transform: none;
 }
-#engineering .split__note {
+#real-estate .split__note {
   font-family: var(--slab);
   font-style: normal;
   font-size: 0.9rem;
@@ -3693,7 +3696,7 @@ body.is-loaded .hero__title .line:nth-child(3) > span { transition-delay: 0.35s;
 .site-header.is-scrolled .brand__light { opacity: 1; }
 .site-header.is-scrolled .brand__dark { opacity: 0; }
 
-.subnav { background: rgba(63, 74, 66, 0.96); }
+.subnav { background: rgba(63, 74, 66, 0.985); }
 
 /* controls */
 .btn--outline { --btn-fg: var(--text); --btn-bd: var(--line); }
@@ -3719,6 +3722,97 @@ input[type="file"] { color: var(--text); }
 .footer-socials a:hover { color: var(--ink); }
 .section--ink .swimlane__btn:hover:not(:disabled) { color: var(--ink); }
 ::selection { color: var(--ink); }
+
+
+/* ==========================================================================
+   Five-sector doors
+   ========================================================================== */
+.doors--five .door__body { padding: clamp(1rem, 1.4vw, 1.5rem); gap: 0.55rem; }
+.doors--five .door__label { font-size: 0.5rem; letter-spacing: 0.16em; }
+.doors--five .door__title { font-size: clamp(1.45rem, 2.1vw, 2.1rem); }
+.doors--five .door__pitch { font-size: 0.84rem; line-height: 1.55; }
+.doors--five .door__cta {
+  min-height: 38px;
+  padding: 0.65rem 0.8rem 0.65rem 0.95rem;
+  gap: 0.6rem;
+  font-size: 0.5rem;
+  letter-spacing: 0.14em;
+}
+.doors--five:hover .door:not(:hover) { flex-grow: 0.6; }
+.doors--five:hover .door:hover { flex-grow: 2.5; }
+
+@media (max-width: 1180px) and (min-width: 901px) {
+  .doors--five {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: clamp(0.5rem, 1vw, 0.9rem);
+    height: auto;
+  }
+  .doors--five .door { grid-column: span 2; min-height: 430px; }
+  .doors--five .door:nth-child(4),
+  .doors--five .door:nth-child(5) { grid-column: span 3; min-height: 360px; }
+  .doors--five .door__pitch,
+  .doors--five .door__cta { opacity: 1; transform: none; }
+  .doors--five:hover .door:not(:hover),
+  .doors--five:hover .door:hover { flex-grow: 0; }
+}
+
+@media (max-width: 560px) {
+  .wordmark--caps {
+    font-size: 0.8rem;
+    letter-spacing: 0.13em;
+    line-height: 1.5;
+  }
+  #real-estate .wordmark--caps {
+    font-size: 0.98rem;
+    letter-spacing: 0.005em;
+  }
+}
+
+/* Sahan Homes sub-block inside Real estate */
+.subsidiary {
+  display: grid;
+  grid-template-columns: minmax(0, 0.44fr) minmax(0, 1fr);
+  gap: clamp(1rem, 2vw, 1.5rem);
+  align-items: center;
+  margin-top: clamp(1.5rem, 2.6vw, 2rem);
+  padding: clamp(1rem, 1.8vw, 1.35rem);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(240, 231, 214, 0.04);
+}
+.subsidiary__logo {
+  display: grid;
+  place-items: center;
+  min-height: 92px;
+  padding: 0.9rem;
+  background: var(--forest-deep);
+  border-radius: 10px;
+}
+.subsidiary__logo img { max-height: 62px; width: auto; max-width: 100%; object-fit: contain; }
+.subsidiary__label {
+  display: block;
+  font-size: 0.5rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gold-light);
+}
+.subsidiary p {
+  margin: 0.5rem 0 0.75rem;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--ink-60);
+}
+@media (max-width: 560px) {
+  .subsidiary { grid-template-columns: 1fr; }
+  .subsidiary__logo { min-height: 0; }
+  .subsidiary__logo img { max-height: 56px; }
+}
+
+/* ==========================================================================
+   Scroll colour — the page surface shifts through the brand greens
+   ========================================================================== */
 
 /* ==========================================================================
    Print
