@@ -20,7 +20,7 @@
   <link rel="stylesheet" href="assets/css/styles.css">
   <noscript><style>.reveal,.reveal-media{opacity:1 !important;transform:none !important;clip-path:none !important}</style></noscript>
 </head>
-<body id="top">
+<body id="top" data-text-motion>
   <a class="skip-link" href="#main">Skip to content</a>
   <div class="scroll-progress" aria-hidden="true"></div>
 
@@ -86,79 +86,44 @@
   </div>
 
   <main id="main">
-    <!-- Orbit story: one core, five sectors -->
-    <section class="orbit-story" data-orbit data-stage="0" aria-label="Sahan Group — one standard, five sectors">
-      <div class="orbit-stage">
-        <div class="hero__media hero__media--montage" aria-hidden="true">
-          <div class="hero__slide">
-            <img src="assets/img/avora-twilight-1200.webp" srcset="assets/img/avora-twilight-1200.webp 1200w, assets/img/avora-twilight.webp 2000w" sizes="100vw" alt="" width="2000" height="1125" fetchpriority="high" decoding="async">
-          </div>
-          <div class="hero__slide">
-            <img src="assets/img/fb-dining-900.webp" srcset="assets/img/fb-dining-900.webp 900w, assets/img/fb-dining.webp 1700w" sizes="100vw" alt="" width="1700" height="1133" decoding="async">
-          </div>
-          <div class="hero__slide">
-            <img src="assets/img/pure-spring-dispenser.webp" alt="" width="1000" height="1169" decoding="async">
-          </div>
+    <section class="hero hero--montage">
+      <div class="hero__media hero__media--montage" aria-hidden="true">
+        <div class="hero__slide">
+          <img src="assets/img/avora-twilight-1200.webp" srcset="assets/img/avora-twilight-1200.webp 1200w, assets/img/avora-twilight.webp 2000w" sizes="100vw" alt="" width="2000" height="1125" fetchpriority="high" decoding="async">
         </div>
-        <div class="hero__veil" aria-hidden="true"></div>
-        <div class="orbit-scrim" aria-hidden="true"></div>
+        <div class="hero__slide">
+          <img src="assets/img/fb-dining-900.webp" srcset="assets/img/fb-dining-900.webp 900w, assets/img/fb-dining.webp 1700w" sizes="100vw" alt="" width="1700" height="1133" decoding="async">
+        </div>
+        <div class="hero__slide">
+          <img src="assets/img/pure-spring-dispenser.webp" alt="" width="1000" height="1169" decoding="async">
+        </div>
+      </div>
+      <div class="hero__veil" aria-hidden="true"></div>
 
-        <div class="orbit-panel orbit-panel--hero is-active" data-panel="0">
-          <div class="container hero__inner">
-            <span class="hero__badge rise" style="--i:0">Est. 2001 · Gampaha</span>
-            <p class="label label--light hero__eyebrow rise" style="--i:1">Sahan Group · Sri Lanka</p>
-            <h1 class="hero__title">
-              <span class="line"><span>25 years of</span></span>
-              <span class="line"><span><em>proven trust</em>.</span></span>
-            </h1>
-            <p class="hero__sectors rise" style="--i:4">
-              <span>Real estate</span><span>Hospitality</span><span>F&amp;B</span><span>Financial services</span><span>Logistics</span>
-            </p>
-            <p class="hero__lede">Five sectors, one group. A quarter-century of delivery behind every one.</p>
-            <div class="hero__actions">
-              <a class="btn" href="#sectors">Explore the group <svg class="ico"><use href="#i-arrow"/></svg></a>
-              <a class="btn btn--ghost" href="#investors">For investors <svg class="ico"><use href="#i-arrow"/></svg></a>
-            </div>
-          </div>
+      <div class="container hero__inner">
+        <span class="hero__badge">Est. 2001 · Gampaha</span>
+        <p class="label label--light hero__eyebrow">Sahan Group · Sri Lanka</p>
+        <h1 class="hero__title">
+          <span class="line"><span>25 years of</span></span>
+          <span class="line"><span><em>proven trust</em>.</span></span>
+        </h1>
+        <p class="hero__sectors">
+          <span>Real estate</span><span>Hospitality</span><span>F&amp;B</span><span>Financial services</span><span>Logistics</span>
+        </p>
+        <p class="hero__lede">Five sectors, one group. A quarter-century of delivery behind every one.</p>
+        <div class="hero__actions">
+          <a class="btn" href="#sectors">Explore the group <svg class="ico"><use href="#i-arrow"/></svg></a>
+          <a class="btn btn--ghost" href="#investors">For investors <svg class="ico"><use href="#i-arrow"/></svg></a>
         </div>
+      </div>
 
-        <div class="orbit-panel orbit-panel--right" data-panel="1" aria-hidden="true">
-          <div class="orbit-copy">
-            <p class="label label--light rise" style="--i:0">Our standard</p>
-            <h2 class="orbit-title">
-              <span class="line" style="--i:1"><span>One standard</span></span>
-              <span class="line" style="--i:2"><span>at the <em>centre</em>.</span></span>
-            </h2>
-            <p class="orbit-text rise" style="--i:4">Every Sahan company answers to the same standard that has carried the group since 2001 — deliver what was promised.</p>
-          </div>
-        </div>
-
-        <div class="orbit-panel orbit-panel--left" data-panel="2" aria-hidden="true">
-          <div class="orbit-copy">
-            <p class="label label--light rise" style="--i:0">The group</p>
-            <h2 class="orbit-title">
-              <span class="line" style="--i:1"><span>Five sectors</span></span>
-              <span class="line" style="--i:2"><span>one <em>group</em>.</span></span>
-            </h2>
-            <ol class="orbit-sectors">
-              <li class="rise" data-sector="0" style="--i:3;--c:#e0cba6"><span>Real estate</span><small>Sahan Engineering &amp; Constructions · Sahan Homes</small></li>
-              <li class="rise" data-sector="1" style="--i:4;--c:#d08a55"><span>Hospitality</span><small>Kaze Restaurant &amp; Pub</small></li>
-              <li class="rise" data-sector="2" style="--i:5;--c:#84bccd"><span>F&amp;B</span><small>Pure Spring</small></li>
-              <li class="rise" data-sector="3" style="--i:6;--c:#c9b06f"><span>Financial services</span><small>Invest Lanka</small></li>
-              <li class="rise" data-sector="4" style="--i:7;--c:#93a89b"><span>Logistics</span><small>Cassandra</small></li>
-            </ol>
-            <a class="tlink rise" style="--i:8" href="#sectors">Meet the companies <svg class="ico"><use href="#i-arrow"/></svg></a>
-          </div>
-        </div>
-
-        <div class="container hero__foot orbit-foot">
-          <ul class="hero__meta">
-            <li>Est. 2001</li>
-            <li>Five sectors</li>
-            <li>Gampaha, Sri Lanka</li>
-          </ul>
-          <a class="scroll-cue" href="#sectors">Scroll to explore <svg class="ico"><use href="#i-down"/></svg></a>
-        </div>
+      <div class="container hero__foot">
+        <ul class="hero__meta">
+          <li>Est. 2001</li>
+          <li>Five sectors</li>
+          <li>Gampaha, Sri Lanka</li>
+        </ul>
+        <a class="scroll-cue" href="#sectors">Scroll to explore <svg class="ico"><use href="#i-down"/></svg></a>
       </div>
     </section>
 
@@ -530,6 +495,5 @@
   </footer>
 
   <script src="assets/js/main.js" defer></script>
-  <script src="assets/js/orbit.js" defer></script>
 </body>
 </html>
