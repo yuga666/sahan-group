@@ -28,12 +28,29 @@
   var lastY = window.scrollY;
   var ticking = false;
 
+  var tucked = false;
+
+  function setTucked(state) {
+    if (state === tucked || !header) return;
+    tucked = state;
+    header.classList.toggle('is-tucked', state);
+    body.classList.toggle('header-tucked', state);
+  }
+
   function onScroll() {
     var y = window.scrollY;
+    var dy = y - lastY;
     lastY = y;
 
     if (header) {
       header.classList.toggle('is-scrolled', y > 48);
+      if (body.classList.contains('nav-open') || y < 160) {
+        setTucked(false);
+      } else if (dy > 6) {
+        setTucked(true);
+      } else if (dy < -6) {
+        setTucked(false);
+      }
     }
 
     if (progress) {
@@ -44,7 +61,7 @@
 
     if (!reduceMotion) {
       var media = doc.querySelector('.hero__media:not(.hero__media--montage) img');
-      if (media && window.innerWidth > 980 && y < window.innerHeight) {
+      if (media && y < window.innerHeight) {
         media.style.translate = '0 ' + (y * 0.12).toFixed(2) + 'px';
       }
     }
@@ -147,6 +164,129 @@
   } else {
     revealEls.forEach(function (el) { el.classList.add('is-visible'); });
   }
+
+  /* ------------------------------------------------------------------
+     Scroll motion
+     - [data-parallax]: photo drifts inside its frame (--p)
+     - [data-expand]:   feature photo opens from an inset frame (--e)
+     - lists:           gold rule fills as you read down (--p2)
+     - headings rise out of a mask, label rules draw in
+     - list numbers light as they pass the middle of the screen
+  ------------------------------------------------------------------ */
+  function clamp01(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
+
+  if (!reduceMotion && 'IntersectionObserver' in window) {
+    var parallaxSel = [
+      '.vertical__media .media:first-child',
+      '.careers-grid__media .media:first-child',
+      '.cta-media',
+      '.page-hero__media',
+      '.quote-band__media'
+    ].join(',');
+    doc.querySelectorAll(parallaxSel).forEach(function (el) { el.setAttribute('data-parallax', ''); });
+    doc.querySelectorAll('.project__hero, .split__media').forEach(function (el) { el.setAttribute('data-expand', ''); });
+
+    var scrubEls = doc.querySelectorAll('[data-parallax], [data-expand], .timeline, .principles, .roles');
+    var live = new Set();
+
+    var liveIO = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) live.add(entry.target); else live.delete(entry.target);
+      });
+      requestScrub();
+    }, { rootMargin: '10% 0px 10% 0px' });
+    scrubEls.forEach(function (el) { liveIO.observe(el); });
+
+    var scrubQueued = false;
+    function requestScrub() {
+      if (scrubQueued) return;
+      scrubQueued = true;
+      window.requestAnimationFrame(scrub);
+    }
+
+    function scrub() {
+      scrubQueued = false;
+      var vh = window.innerHeight;
+      live.forEach(function (el) {
+        var r = el.getBoundingClientRect();
+        if (el.hasAttribute('data-parallax')) {
+          el.style.setProperty('--p', clamp01((vh - r.top) / (vh + r.height)).toFixed(4));
+        }
+        if (el.hasAttribute('data-expand')) {
+          el.style.setProperty('--e', clamp01((vh - r.top) / (vh * 0.75)).toFixed(4));
+        }
+        if (el.matches('.timeline, .principles, .roles')) {
+          el.style.setProperty('--p2', clamp01((vh * 0.72 - r.top) / Math.max(r.height, 1)).toFixed(4));
+        }
+      });
+    }
+
+    window.addEventListener('scroll', requestScrub, { passive: true });
+    window.addEventListener('resize', requestScrub);
+    requestScrub();
+
+    /* headings rise out of a mask */
+    doc.querySelectorAll('.display-2, .vertical__title, .cta-panel h2').forEach(function (el) {
+      if (el.closest('.reveal')) return;
+      el.classList.add('mask-rise');
+    });
+
+    var once = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) return;
+        var el = entry.target;
+        if (el.classList.contains('label')) el.classList.add('is-drawn');
+        if (el.hasAttribute('data-mask-host')) {
+          el.querySelectorAll(':scope > .mask-rise').forEach(function (h) { h.classList.add('is-visible'); });
+        }
+        once.unobserve(el);
+      });
+    }, { rootMargin: '0px 0px -10% 0px', threshold: 0.2 });
+
+    doc.querySelectorAll('.label').forEach(function (el) { once.observe(el); });
+    /* a clipped heading never reports as intersecting, so watch its parent */
+    doc.querySelectorAll('.mask-rise').forEach(function (el) {
+      var host = el.parentElement;
+      if (!host || host.hasAttribute('data-mask-host')) return;
+      host.setAttribute('data-mask-host', '');
+      once.observe(host);
+    });
+
+    /* list numbers light up as each item crosses the middle of the screen */
+    var current = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        entry.target.classList.toggle('is-current', entry.isIntersecting);
+      });
+    }, { rootMargin: '-42% 0px -42% 0px' });
+    doc.querySelectorAll('.chapter, .principle').forEach(function (el) { current.observe(el); });
+  }
+
+  /* ------------------------------------------------------------------
+     Swipe rails (mobile): progress line under doors, photo sets, gallery
+  ------------------------------------------------------------------ */
+  doc.querySelectorAll('.doors, .vertical__media, .gallery').forEach(function (rail) {
+    var bar = doc.createElement('div');
+    bar.className = 'rail-progress';
+    bar.setAttribute('aria-hidden', 'true');
+    bar.appendChild(doc.createElement('span'));
+    rail.insertAdjacentElement('afterend', bar);
+    var queued = false;
+    function update() {
+      queued = false;
+      var sw = rail.scrollWidth;
+      if (!sw) return;
+      bar.style.setProperty('--rw', clamp01(rail.clientWidth / sw).toFixed(4));
+      bar.style.setProperty('--rx', ((rail.scrollLeft / sw) * 100).toFixed(2) + '%');
+    }
+    function queue() {
+      if (queued) return;
+      queued = true;
+      window.requestAnimationFrame(update);
+    }
+    rail.addEventListener('scroll', queue, { passive: true });
+    window.addEventListener('resize', queue);
+    update();
+  });
 
   /* ------------------------------------------------------------------
      Scrollspy for the verticals sub-navigation
