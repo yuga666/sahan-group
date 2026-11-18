@@ -346,7 +346,7 @@
   ------------------------------------------------------------------ */
   if (body.hasAttribute('data-text-motion') && !reduceMotion && 'IntersectionObserver' in window) {
     var textSel = 'main > section:not(.hero) :is(h2, h3, h4, p, blockquote, figcaption, .btn, .door, .venture, li, dt, dd)';
-    var skip = '.reveal, .reveal-media, .mask-rise, [data-parallax], [data-reveal], .rail-progress';
+    var skip = '.reveal, .reveal-media, .mask-rise, [data-parallax], [data-reveal], .rail-progress, .door__pitch, .door__cta';
     var textEls = [];
     doc.querySelectorAll(textSel).forEach(function (el) {
       if (el.closest(skip) || el.parentElement.closest('[data-reveal]')) return;
