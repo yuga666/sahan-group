@@ -29,9 +29,15 @@
   [headers.values]
     Cache-Control = "public, max-age=0, must-revalidate"
 
-# Test files live in the repo but are not part of the website.
+# Test files and internal docs live in the repo but are not part of the website.
 [[redirects]]
   from = "/tests/*"
+  to = "/404.html"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/docs/*"
   to = "/404.html"
   status = 404
   force = true

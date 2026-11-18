@@ -21,6 +21,13 @@
     pages: ['index.html', 'about.html', 'verticals.html', 'properties.html', 'careers.html', '404.html'],
     scripts: ['assets/js/main.js']
   };
+  /* Test mode: /admin/?branch=admin-sandbox reads and writes that branch instead
+     of the live one, so the admin can be tried without touching the website. */
+  (function () {
+    var b = new URLSearchParams(location.search).get('branch');
+    if (b && /^[A-Za-z0-9._\/-]{1,80}$/.test(b) && b.indexOf('..') === -1) CONFIG.branch = b;
+  })();
+  CONFIG.live = CONFIG.branch === 'main';
   var API = 'https://api.github.com';
   var REPO = '/repos/' + CONFIG.owner + '/' + CONFIG.repo;
   var TOKEN_KEY = 'sahan-admin-token';
@@ -537,7 +544,7 @@
         state.dirty = false;
         setBusy(false);
         renderList();
-        status('Published. The website updates in about a minute.', false,
+        status(CONFIG.live ? 'Published. The website updates in about a minute.' : 'Saved to test branch ' + CONFIG.branch + '. The live site is unchanged.', false,
           res.commit.html_url ? { href: res.commit.html_url, text: 'View the change' } : null);
       })
       .catch(function (e) { setBusy(false); status(publishError(e), true); });
@@ -796,6 +803,12 @@
     state.token = ''; state.dirty = false; state.draftDirty = false;
     location.reload();
   });
+
+  var badge = $('[data-branch]');
+  if (badge) {
+    badge.textContent = CONFIG.live ? 'Live site' : 'Test mode · ' + CONFIG.branch;
+    badge.classList.toggle('is-test', !CONFIG.live);
+  }
 
   var saved = load(TOKEN_KEY);
   if (saved) connect(saved); else showStep('signin');

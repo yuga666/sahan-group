@@ -43,14 +43,14 @@ async function mockGitHub(page) {
       const p = decodeURIComponent(u.slice('/contents/'.length));
       return json({ sha: 'sha-' + p, content: Buffer.from(read(p)).toString('base64') });
     }
-    if (req.method() === 'GET' && u === '/git/ref/heads/main') return json({ object: { sha: 'head-1' } });
+    if (req.method() === 'GET' && u.startsWith('/git/ref/heads/')) return json({ object: { sha: 'head-1' } });
     if (req.method() === 'GET' && u === '/git/commits/head-1') return json({ sha: 'head-1', tree: { sha: 'tree-1' } });
     const body = req.postData() ? JSON.parse(req.postData()) : null;
     calls.push({ method: req.method(), path: u, body });
     if (u === '/git/blobs') return json({ sha: 'blob-' + calls.length });
     if (u === '/git/trees') return json({ sha: 'tree-2' });
     if (u === '/git/commits') return json({ sha: 'commit-2', html_url: 'https://github.com/x/y/commit/2' });
-    if (u === '/git/refs/heads/main') return json({ object: { sha: 'commit-2' } });
+    if (u.startsWith('/git/refs/heads/')) return json({ object: { sha: 'commit-2' } });
     return json({ message: 'unexpected ' + u }, 500);
   });
   return { calls, authErrors };
@@ -69,8 +69,8 @@ function committedFiles(calls) {
   return out;
 }
 
-async function signIn(page, BASE) {
-  await page.goto(BASE + 'admin/');
+async function signIn(page, BASE, query = '') {
+  await page.goto(BASE + 'admin/' + query);
   await page.fill('#a-token', 'test-token');
   await page.click('[data-signin] button[type=submit]');
   await page.locator('.admin__row').first().waitFor();
@@ -364,6 +364,23 @@ function watchErrors(page) {
       '<a href="sahan.html" title="Sahan">Sahan</a><script>var Sahan=1</script><p>Sahan &amp; co</p>', 'Sahan', 'Avora'));
     assert.equal(r.text, '<a href="sahan.html" title="Avora">Avora</a><script>var Sahan=1</script><p>Avora &amp; co</p>');
     assert.equal(r.count, 3);
+    await page.close();
+  });
+
+  await test('Test mode: ?branch=admin-sandbox reads and writes only that branch', async () => {
+    const page = await browser.newPage();
+    const { calls } = await mockGitHub(page);
+    const reads = [];
+    page.on('request', (r) => { if (r.url().includes('/contents/')) reads.push(r.url()); });
+    await signIn(page, BASE, '?branch=admin-sandbox');
+    assert.match(await page.textContent('[data-branch]'), /Test mode · admin-sandbox/);
+    await page.click('[data-action="toggle"]');
+    await page.click('[data-publish]');
+    await page.waitForFunction(() => /test branch/.test(document.querySelector('[data-status]').textContent));
+    assert.ok(reads.every((u) => !u.includes('ref=main')), 'must not read main in test mode');
+    const ref = calls.find((c) => c.path.startsWith('/git/refs/heads/'));
+    assert.equal(ref.path, '/git/refs/heads/admin-sandbox');
+    assert.equal(calls.filter((c) => c.path === '/git/refs/heads/main').length, 0);
     await page.close();
   });
 

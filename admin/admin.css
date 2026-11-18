@@ -118,3 +118,5 @@
 .admin__matches { margin: 1.25rem 0 0; padding: 0; list-style: none; font-size: 0.9rem; color: var(--ink-60); }
 .admin__matches li { padding: 0.35rem 0; border-bottom: 1px solid var(--line-soft); }
 @media (max-width: 560px) { .admin__signout { margin-left: 0; } }
+.admin__branch { margin-left: 0.6rem; padding: 0.3rem 0.6rem; border: 1px solid var(--line); border-radius: 999px; letter-spacing: 0.12em; }
+.admin__branch.is-test { background: #8a3b2a; border-color: #8a3b2a; color: var(--paper); }

@@ -166,6 +166,10 @@ Every publish is a single commit on `main`, so any change can be undone on GitHu
 
 Edit `data/properties.json` and put photos in `assets/img/properties/`. Leave a field as `""` to hide it on the card; set `"published": false` to hide a whole listing. Links may be `#anchor`, a page such as `avora.html`, or a full `https://` address; images must live under `assets/img/`.
 
+### Trying it safely
+
+Open `/admin/?branch=admin-sandbox` to work on a test branch instead of the live site (a red *Test mode* badge shows). Step-by-step checklist: [`docs/ADMIN-TESTING.md`](docs/ADMIN-TESTING.md).
+
 ### Tests
 
 ```bash
