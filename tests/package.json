@@ -1,0 +1,11 @@
+{
+  "name": "sahan-group-site-tests",
+  "private": true,
+  "description": "Browser checks for the properties portfolio and admin. Not part of the website build.",
+  "scripts": {
+    "test": "node run.cjs"
+  },
+  "devDependencies": {
+    "playwright": "^1.48.0"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "_readme": "Contact details and links used across every page. Change them through /admin/ (Site settings): publishing rewrites the matching links and text in the HTML pages and in assets/js/main.js, then saves the new values here. Editing this file by hand changes nothing on its own.",
+  "email": "info@sahangroup.lk",
+  "careersEmail": "careers@sahangroup.lk",
+  "phone": { "display": "077 239 9049", "tel": "+94772399049" },
+  "officePhone": { "display": "+94 33 223 3004", "tel": "+94332233004" },
+  "mapsUrl": "https://maps.app.goo.gl/sbn6VAPjmVdvaw788",
+  "socials": { "instagram": "", "linkedin": "", "facebook": "" }
+}
