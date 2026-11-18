@@ -4225,3 +4225,19 @@ body.header-tucked .subnav { top: 0; }
   .pcard { animation: none; }
 }
 .portfolio__error { grid-column: 1 / -1; font-size: 0.85rem; color: var(--gold-ink); }
+/* ==================================================================
+   Text motion (home page)
+   ================================================================== */
+/* text fades up in a stagger as it enters (main.js tags [data-reveal]) */
+.js [data-reveal]:not(.is-in) { opacity: 0; }
+[data-reveal].is-in {
+  animation: textRise 0.95s cubic-bezier(0.2, 0.7, 0.2, 1) var(--rd, 0s) backwards;
+}
+@keyframes textRise {
+  from { opacity: 0; translate: 0 28px; filter: blur(6px); }
+  to   { opacity: 1; translate: 0 0; filter: blur(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .js [data-reveal]:not(.is-in) { opacity: 1; }
+  [data-reveal].is-in { animation: none; }
+}

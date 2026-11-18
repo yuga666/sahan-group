@@ -341,6 +341,36 @@
   });
 
   /* ------------------------------------------------------------------
+     Text motion (home page, body[data-text-motion])
+     Text fades up as it enters. Items entering together stagger.
+  ------------------------------------------------------------------ */
+  if (body.hasAttribute('data-text-motion') && !reduceMotion && 'IntersectionObserver' in window) {
+    var textSel = 'main > section:not(.hero) :is(h2, h3, h4, p, blockquote, figcaption, .btn, .door, .venture, li, dt, dd)';
+    var skip = '.reveal, .reveal-media, .mask-rise, [data-parallax], [data-reveal], .rail-progress';
+    var textEls = [];
+    doc.querySelectorAll(textSel).forEach(function (el) {
+      if (el.closest(skip) || el.parentElement.closest('[data-reveal]')) return;
+      el.setAttribute('data-reveal', '');
+      textEls.push(el);
+    });
+
+    var textIO = new IntersectionObserver(function (entries) {
+      var shown = entries.filter(function (e) { return e.isIntersecting; })
+        .map(function (e) { return e.target; })
+        .sort(function (a, b) {
+          return a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1;
+        });
+      shown.forEach(function (el, i) {
+        el.style.setProperty('--rd', Math.min(i * 0.08, 0.64).toFixed(2) + 's');
+        el.classList.add('is-in');
+        textIO.unobserve(el);
+      });
+    }, { rootMargin: '0px 0px -6% 0px', threshold: 0.01 });
+
+    textEls.forEach(function (el) { textIO.observe(el); });
+  }
+
+  /* ------------------------------------------------------------------
      Scrollspy for the verticals sub-navigation
   ------------------------------------------------------------------ */
   var spyLinks = doc.querySelectorAll('[data-spy] a');
