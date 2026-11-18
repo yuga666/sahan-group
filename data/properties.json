@@ -1,0 +1,27 @@
+{
+  "_readme": "Properties shown in the Portfolio section of properties.html. Edit through /admin/ or by hand. Only entries with \"published\": true appear on the site. Leave a field empty (\"\") to hide it on the card.",
+  "properties": [
+    {
+      "id": "avora-residences",
+      "published": true,
+      "name": "AVORA Residences",
+      "type": "Residential development · Sahan Homes",
+      "location": "Gampaha",
+      "summary": "A slender tower of private residences in timber, stone and glass — delivered by Sahan Engineering & Constructions, with a rooftop pool, a sky gym and a landscaped garden above Gampaha.",
+      "status": ["Upcoming", "Launching now"],
+      "image": "assets/img/avora-day-900.webp",
+      "imageAlt": "AVORA Residences tower in daylight",
+      "specs": {
+        "bedrooms": "2, 3 & 4 bedroom apartments",
+        "size": "",
+        "bathrooms": "",
+        "parking": "Secure parking",
+        "floors": "10 floors · 24 apartments",
+        "completion": "Construction 2027 · Completion 2029"
+      },
+      "priceLabel": "Starting from LKR",
+      "price": "24M",
+      "link": "#residences"
+    }
+  ]
+}

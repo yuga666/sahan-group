@@ -48,11 +48,14 @@ Sahan Group is the umbrella brand. The site presents **five sectors**, each with
 index.html                 Home — montage hero, five sector doors, ventures, proof, legacy + roots, motto, investors, founder, closing + map
 about.html                 About us — story, chapters, group structure, purpose/vision/mission, what we stand for, manifesto quote
 verticals.html             Verticals — a section per sector, with sticky section navigation
-properties.html            Properties — Sahan Homes and AVORA Residences, gallery, register-interest form
+properties.html            Properties — Sahan Homes and AVORA Residences, gallery, register-interest form, portfolio grid
+admin/                     Properties admin (edits data/properties.json through GitHub)
+data/properties.json       Property listings shown in the portfolio grid
 careers.html               Careers — culture, benefits, CV submission portal
 
 assets/css/styles.css      Design system, layout, components, responsive rules
 assets/js/main.js          Navigation, reveal-on-scroll, scrollspy, count-up, scroll colour, lightbox, forms
+assets/js/properties.js    Renders the property cards (shared by the page and the admin preview)
 assets/fonts/fonts.css     Helvetica Neue is system; Inter, Cormorant Garamond and Roboto Slab are embedded as data URIs
 assets/img/                Photography, AVORA renders, company logos, favicon, social image
 assets/img/brand/          Sahan Homes, Kaze, Pure Spring, Cassandra and Invest Lanka logos
@@ -135,6 +138,34 @@ The client asked for the feel of [unilever.com](https://www.unilever.com/). Thes
 Source documents used: *Sahan Group — Brand Manifesto & Messaging Document* (Bricks, 16 Nov 2026), *Sahan Group Website Information Request* (Gayan, 22 Oct 2026), *Sahan Engineering company profile 2025 part 01*, the three *Brand Manifesto & Discovery Brief* documents, *Sahan Group Brand Guide*, and the *4-day launch plan* (16 Nov 2026).
 
 The manifesto's vision, mission, motto, investor language and "what we stand for" pillars are reproduced as approved brand messaging; confirm them with the client before launch. The manifesto's visual identity (logo architecture, colourways, Helvetica Neue core, GC Vank/Optima/Roboto Slab hierarchy) is reflected in the site where the fonts are available.
+
+---
+
+## Updating properties
+
+The **Portfolio** section at the bottom of `properties.html` (`#portfolio`) lists every Sahan Homes development as a card: photo, status tags, type, name, location, short description, details (bedrooms, size, bathrooms, parking, floors, timeline), starting price and an **Explore** button. The cards come from `data/properties.json`; nothing else on the page changes when you add one.
+
+### With the admin page (no code)
+
+1. **One-time:** create a GitHub token. GitHub → Settings → Developer settings → *Fine-grained tokens* → Generate. Repository access: *Only select repositories* → `sahan-group`. Permissions: *Contents → Read and write*. Set an expiry (90 days is sensible) and keep the token somewhere safe, like a password manager.
+2. Open **`https://<site>/admin/`**, paste the token and press **Connect**. The token lives only in that browser tab and is forgotten when the tab closes.
+3. **Add property**, fill the fields, choose a photo (WebP/JPG/PNG under 2 MB) and watch the live preview. Press **Done**.
+4. Use **Up / Down** to set the order, **Hide** to take a listing off the site without deleting it, **Delete** (press twice) to remove it.
+5. Press **Publish changes**. That makes one commit to `main`; Netlify redeploys and the site shows the change in about a minute.
+
+Anyone who should edit listings needs write access to the repository (or a token from someone who has it). Revoke a token on GitHub at any time.
+
+### By hand
+
+Edit `data/properties.json` and put photos in `assets/img/properties/`. Leave a field as `""` to hide it on the card; set `"published": false` to hide a whole listing. Links may be `#anchor`, a page such as `avora.html`, or a full `https://` address; images must live under `assets/img/`.
+
+### Tests
+
+```bash
+cd tests && npm install && npm test
+```
+
+The checks serve the site with the production CSP and confirm that AVORA is listed with the right details, that the original `properties.html` copy is unchanged apart from the added portfolio block (compared with `tests/baseline-properties.html`), that the layout holds at phone width, that text from the data can't inject HTML, and that the admin publishes the right commit (GitHub API mocked). If you deliberately change the page copy later, refresh the baseline by copying `properties.html` over `tests/baseline-properties.html` without the `portfolio:start … portfolio:end` block and the `portfolio:script` line.
 
 ---
 

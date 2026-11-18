@@ -7,6 +7,23 @@ Newest entries first. Keep this file updated with each design or content pass.
 
 ## November 2026
 
+### Property portfolio + admin
+**18 Nov 2026**
+
+Yuga asked for a way for an admin to add future properties without editing HTML,
+listed under Properties like a developer's project grid.
+
+- New **Portfolio** section (`#portfolio`, "06") at the end of `properties.html`,
+  after the Sahan Homes section. Cards show photo, status tags, type, name,
+  location, description, details, starting price and Explore.
+- Listings live in `data/properties.json`. AVORA is the only entry, built only
+  from copy already on the page (banner text, fact grid, amenities).
+- `/admin/` edits the listings and uploads photos straight to GitHub; Netlify
+  redeploys in about a minute. No server, no third-party scripts.
+- CSP: `connect-src` now allows `https://api.github.com` (admin only uses it).
+  `/admin/` is `noindex` and blocked in robots.txt; `/tests/` returns 404.
+- No existing copy, images or sections changed. `tests/run.cjs` checks this.
+
 ### Five sectors, a quieter page, and scroll colour
 **18 Nov 2026**
 
