@@ -23,6 +23,12 @@ listed under Properties like a developer's project grid.
 - CSP: `connect-src` now allows `https://api.github.com` (admin only uses it).
   `/admin/` is `noindex` and blocked in robots.txt; `/tests/` returns 404.
 - No existing copy, images or sections changed. `tests/run.cjs` checks this.
+- The admin also has **Site settings** (emails, phones, maps, socials, applied
+  to every page) and **Change text** (find and replace page text). Each publish
+  is one commit.
+- Copy change requested by Yuga: AVORA is now "delivered by Sahan Group"
+  (properties banner, residences paragraph, home AVORA door) instead of
+  Sahan Engineering & Constructions.
 
 ### Five sectors, a quieter page, and scroll colour
 **18 Nov 2026**

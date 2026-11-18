@@ -16,7 +16,10 @@
     dataPath: 'data/properties.json',
     imageDir: 'assets/img/properties',
     maxImageBytes: 2 * 1024 * 1024,
-    timeoutMs: 45000
+    timeoutMs: 45000,
+    sitePath: 'data/site.json',
+    pages: ['index.html', 'about.html', 'verticals.html', 'properties.html', 'careers.html', '404.html'],
+    scripts: ['assets/js/main.js']
   };
   var API = 'https://api.github.com';
   var REPO = '/repos/' + CONFIG.owner + '/' + CONFIG.repo;
@@ -40,7 +43,9 @@
     pendingImages: {},   // listing id -> { dataUrl, ext } waiting to be published
     uploaded: {},        // repo path -> dataUrl, so new photos show before the site redeploys
     dirty: false,        // list has changes not yet published
-    busy: false          // a publish is in flight
+    busy: false,         // a publish is in flight
+    site: null,          // data/site.json as loaded
+    siteSha: null
   };
 
   /* ---------- helpers ---------- */
@@ -140,9 +145,14 @@
     btn.disabled = true;
     signinError('');
     status('Loading properties…');
-    return gh(contentsPath(CONFIG.dataPath) + '?ref=' + encodeURIComponent(CONFIG.branch), null, token)
-      .then(function (file) {
+    var ref = '?ref=' + encodeURIComponent(CONFIG.branch);
+    return Promise.all([gh(contentsPath(CONFIG.dataPath) + ref, null, token), gh(contentsPath(CONFIG.sitePath) + ref, null, token)])
+      .then(function (files) {
         if (seq !== state.connectSeq) return;           // a newer sign-in started; ignore this one
+        var file = files[0];
+        state.site = JSON.parse(b64decodeText(files[1].content));
+        state.siteSha = files[1].sha;
+        fillSettings();
         var data = JSON.parse(b64decodeText(file.content));
         if (!data || !Array.isArray(data.properties)) throw new Error('data/properties.json has no "properties" list');
         state.token = token;
@@ -183,6 +193,8 @@
     doc.querySelectorAll('[data-list] [data-action]').forEach(function (b) {
       b.disabled = locked || b.hasAttribute('data-edge');
     });
+    doc.querySelectorAll('[data-settings] button, [data-replace] button[type=submit], [data-tab]').forEach(function (b) { b.disabled = state.busy; });
+    if (state.busy) $('[data-replace-publish]').disabled = true;
     var done = $('[data-form] button[type=submit]');
     if (done) done.disabled = state.reading || state.busy;
   }
@@ -439,15 +451,63 @@
 
   $('[data-add]').addEventListener('click', function () { openEditor(null); });
 
-  /* ---------- publish: photos + data in one commit ---------- */
+  /* ---------- one commit, many files ----------
+     prepare(headSha) resolves to [{ path, text } | { path, base64 }]. It runs
+     against the branch tip, so it can check nobody else changed what we edit. */
+  function getAt(path, ref) {
+    return gh(contentsPath(path) + '?ref=' + encodeURIComponent(ref))
+      .then(function (f) { return { sha: f.sha, text: b64decodeText(f.content) }; });
+  }
+  function conflict() { var c = new Error('changed'); c.conflict = true; return c; }
+
+  function commitAt(prepare, message) {
+    var headSha, blobShas = {};
+    return gh(REPO + '/git/ref/heads/' + encodeURIComponent(CONFIG.branch))
+      .then(function (ref) {
+        headSha = ref.object.sha;
+        return Promise.all([gh(REPO + '/git/commits/' + headSha), prepare(headSha)]);
+      })
+      .then(function (r) {
+        var files = r[1];
+        if (!files.length) { var none = new Error('Nothing to change.'); none.nothing = true; throw none; }
+        return Promise.all(files.map(function (f) {
+          var body = f.base64 != null ? { content: f.base64, encoding: 'base64' } : { content: f.text, encoding: 'utf-8' };
+          return gh(REPO + '/git/blobs', { method: 'POST', body: body }).then(function (b) { blobShas[f.path] = b.sha; return { path: f.path, sha: b.sha }; });
+        })).then(function (blobs) {
+          return gh(REPO + '/git/trees', { method: 'POST', body: {
+            base_tree: r[0].tree.sha,
+            tree: blobs.map(function (b) { return { path: b.path, mode: '100644', type: 'blob', sha: b.sha }; })
+          } });
+        });
+      })
+      .then(function (tree) {
+        return gh(REPO + '/git/commits', { method: 'POST', body: { message: message + ' (via site admin)', tree: tree.sha, parents: [headSha] } });
+      })
+      .then(function (commit) {
+        return gh(REPO + '/git/refs/heads/' + encodeURIComponent(CONFIG.branch), { method: 'PATCH', body: { sha: commit.sha, force: false } })
+          .then(function () { return { commit: commit, blobs: blobShas }; });
+      });
+  }
+
+  function publishError(e) {
+    return e.nothing ? 'Nothing to change.'
+      : e.conflict || e.status === 409 || e.status === 422
+      ? 'The site changed on GitHub since you loaded this page. Note your edits, reload and try again.'
+      : e.status === 403 || e.status === 404 ? 'This token can read but not publish. Give it "Contents: Read and write" access.'
+      : e.status === 401 ? 'Your token has expired or was revoked. Sign out and sign in with a new one.'
+      : 'Publishing failed: ' + e.message + ' Nothing was changed on the site.';
+  }
+
+  function setBusy(on) { state.busy = on; syncControls(); }
+
+  /* ---------- publish properties: photos + data in one commit ---------- */
   $('[data-publish]').addEventListener('click', function () {
     if (state.busy || state.draft || !state.dirty) return;
-    state.busy = true;
-    syncControls();
+    setBusy(true);
     status('Publishing…');
 
     var snapshot = clone(state.data);
-    var photos = [];                                    // { id, path, img }
+    var photos = [];
     var stamp = Date.now();
     Object.keys(state.pendingImages).forEach(function (id) {
       var p = snapshot.properties.filter(function (x) { return x.id === id; })[0];
@@ -458,66 +518,265 @@
       photos.push({ id: id, path: path, img: img });
     });
     var json = JSON.stringify(snapshot, null, 2) + '\n';
-    var headSha, dataBlobSha;
 
-    gh(REPO + '/git/ref/heads/' + encodeURIComponent(CONFIG.branch))
-      .then(function (ref) {
-        headSha = ref.object.sha;
-        return Promise.all([
-          gh(REPO + '/git/commits/' + headSha),
-          gh(contentsPath(CONFIG.dataPath) + '?ref=' + headSha)
-        ]);
-      })
-      .then(function (r) {
-        if (r[1].sha !== state.sha) { var c = new Error('changed'); c.conflict = true; throw c; }
-        var blobs = photos.map(function (ph) {
-          return gh(REPO + '/git/blobs', { method: 'POST', body: { content: ph.img.dataUrl.split(',')[1], encoding: 'base64' } })
-            .then(function (b) { return { path: ph.path, sha: b.sha }; });
-        });
-        blobs.push(gh(REPO + '/git/blobs', { method: 'POST', body: { content: json, encoding: 'utf-8' } })
-          .then(function (b) { dataBlobSha = b.sha; return { path: CONFIG.dataPath, sha: b.sha }; }));
-        return Promise.all([r[0].tree.sha, Promise.all(blobs)]);
-      })
-      .then(function (r) {
-        return gh(REPO + '/git/trees', { method: 'POST', body: {
-          base_tree: r[0],
-          tree: r[1].map(function (b) { return { path: b.path, mode: '100644', type: 'blob', sha: b.sha }; })
-        } });
-      })
-      .then(function (tree) {
-        return gh(REPO + '/git/commits', { method: 'POST', body: {
-          message: 'Update properties' + (photos.length ? ' and add ' + photos.length + ' photo' + (photos.length > 1 ? 's' : '') : '') + ' (via properties admin)',
-          tree: tree.sha, parents: [headSha]
-        } });
-      })
-      .then(function (commit) {
-        return gh(REPO + '/git/refs/heads/' + encodeURIComponent(CONFIG.branch), { method: 'PATCH', body: { sha: commit.sha, force: false } })
-          .then(function () { return commit; });
-      })
-      .then(function (commit) {
+    commitAt(function (head) {
+      return gh(contentsPath(CONFIG.dataPath) + '?ref=' + head).then(function (f) {
+        if (f.sha !== state.sha) throw conflict();
+        return photos.map(function (ph) { return { path: ph.path, base64: ph.img.dataUrl.split(',')[1] }; })
+          .concat([{ path: CONFIG.dataPath, text: json }]);
+      });
+    }, 'Update properties' + (photos.length ? ' and add ' + photos.length + ' photo' + (photos.length > 1 ? 's' : '') : ''))
+      .then(function (res) {
         photos.forEach(function (ph) {
           var i = indexOfId(ph.id);
           if (i >= 0) state.data.properties[i].image = ph.path;
           state.uploaded[ph.path] = ph.img.dataUrl;
           delete state.pendingImages[ph.id];
         });
-        state.sha = dataBlobSha;
+        state.sha = res.blobs[CONFIG.dataPath];
         state.dirty = false;
-        state.busy = false;
+        setBusy(false);
         renderList();
         status('Published. The website updates in about a minute.', false,
-          commit.html_url ? { href: commit.html_url, text: 'View the change' } : null);
+          res.commit.html_url ? { href: res.commit.html_url, text: 'View the change' } : null);
       })
-      .catch(function (e) {
-        state.busy = false;
-        syncControls();
-        status(e.conflict || e.status === 409 || e.status === 422
-          ? 'The properties changed on GitHub since you loaded them. Note your edits, reload this page and try again.'
-          : e.status === 403 || e.status === 404 ? 'This token can read but not publish. Give it "Contents: Read and write" access.'
-          : e.status === 401 ? 'Your token has expired or was revoked. Sign out and sign in with a new one.'
-          : 'Publishing failed: ' + e.message + ' Nothing was changed on the site.', true);
-      });
+      .catch(function (e) { setBusy(false); status(publishError(e), true); });
   });
+
+  /* ---------- tabs ---------- */
+  doc.querySelectorAll('[data-tab]').forEach(function (tab) {
+    tab.addEventListener('click', function () {
+      if (state.busy) return;
+      var name = tab.getAttribute('data-tab');
+      doc.querySelectorAll('[data-tab]').forEach(function (t) {
+        var on = t === tab;
+        t.classList.toggle('is-active', on);
+        t.setAttribute('aria-selected', on ? 'true' : 'false');
+      });
+      doc.querySelectorAll('[data-panel]').forEach(function (p) { p.hidden = p.getAttribute('data-panel') !== name; });
+      status(name === 'properties' && state.dirty ? 'You have unpublished changes.' : '');
+    });
+  });
+
+  /* ---------- site settings ---------- */
+  var settingsForm = $('[data-settings]');
+  var EMAIL = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+  var PHONE = /^\+?[0-9][0-9 ()-]{6,18}$/;
+  var HTTPS = /^https:\/\/[^\s"'<>\\]+$/;
+  var SOCIALS = [['instagram', 'Instagram'], ['linkedin', 'LinkedIn'], ['facebook', 'Facebook']];
+
+  function telFrom(display) {
+    var d = display.replace(/[^0-9+]/g, '');
+    if (d.charAt(0) === '+') return d;
+    if (d.charAt(0) === '0') return '+94' + d.slice(1);       // Sri Lankan local format
+    return '+' + d;
+  }
+  function escAttr(v) { return v.replace(/&/g, '&amp;'); }
+  function swapAll(text, from, to) { return from && from !== to ? text.split(from).join(to) : text; }
+
+  function fillSettings() {
+    var s = state.site, f = settingsForm.elements;
+    f.email.value = s.email; f.careersEmail.value = s.careersEmail;
+    f.phone.value = s.phone.display; f.officePhone.value = s.officePhone.display;
+    f.mapsUrl.value = s.mapsUrl;
+    SOCIALS.forEach(function (n) { f[n[0]].value = s.socials[n[0]] || ''; });
+  }
+
+  function readSettings() {
+    var f = settingsForm.elements, errs = [];
+    var n = {
+      email: f.email.value.trim(), careersEmail: f.careersEmail.value.trim(),
+      phone: { display: f.phone.value.trim() }, officePhone: { display: f.officePhone.value.trim() },
+      mapsUrl: f.mapsUrl.value.trim(), socials: {}
+    };
+    if (!EMAIL.test(n.email)) errs.push('Main email doesn\'t look right.');
+    if (!EMAIL.test(n.careersEmail)) errs.push('Careers email doesn\'t look right.');
+    if (!PHONE.test(n.phone.display)) errs.push('Main phone should be digits and spaces only.');
+    if (!PHONE.test(n.officePhone.display)) errs.push('Office phone should be digits and spaces only.');
+    if (!HTTPS.test(n.mapsUrl)) errs.push('Google Maps must be a full https:// link.');
+    SOCIALS.forEach(function (s) {
+      var v = f[s[0]].value.trim();
+      if (v && !HTTPS.test(v)) errs.push(s[1] + ' must be a full https:// link, or empty.');
+      n.socials[s[0]] = v;
+    });
+    n.phone.tel = telFrom(n.phone.display);
+    n.officePhone.tel = telFrom(n.officePhone.display);
+    return { value: n, errors: errs };
+  }
+
+  /* Rewrites one file from the old settings to the new ones. */
+  function applySettings(text, path, o, n) {
+    var html = /\.html$/.test(path);
+    text = swapAll(text, o.email, n.email);
+    text = swapAll(text, o.careersEmail, n.careersEmail);
+    text = swapAll(text, 'tel:' + o.phone.tel, 'tel:' + n.phone.tel);
+    text = swapAll(text, o.phone.display, n.phone.display);
+    text = swapAll(text, 'tel:' + o.officePhone.tel, 'tel:' + n.officePhone.tel);
+    text = swapAll(text, o.officePhone.display, n.officePhone.display);
+    if (html) {
+      text = swapAll(text, escAttr(o.mapsUrl), escAttr(n.mapsUrl));
+      text = swapAll(text, o.mapsUrl, escAttr(n.mapsUrl));
+      SOCIALS.forEach(function (s) {
+        var re = new RegExp('<a href="[^"]*"(?: target="_blank" rel="noopener")?(\\s+aria-label="(?:Sahan Group on )?' + s[1] + '")', 'g');
+        var url = n.socials[s[0]];
+        text = text.replace(re, url ? '<a href="' + escAttr(url) + '" target="_blank" rel="noopener"$1' : '<a href="#"$1');
+      });
+    }
+    return text;
+  }
+
+  settingsForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+    if (state.busy || !state.site) return;
+    var r = readSettings();
+    var errBox = $('[data-settings-error]');
+    errBox.textContent = r.errors.join(' ');
+    if (r.errors.length) return;
+    var o = state.site, n = r.value;
+    var next = clone(state.site);
+    ['email', 'careersEmail', 'phone', 'officePhone', 'mapsUrl', 'socials'].forEach(function (k) { next[k] = n[k]; });
+    if (JSON.stringify(next) === JSON.stringify(o)) { status('Nothing changed.'); return; }
+    setBusy(true);
+    status('Publishing settings…');
+    var changed = [];
+    commitAt(function (head) {
+      return gh(contentsPath(CONFIG.sitePath) + '?ref=' + head).then(function (f) {
+        if (f.sha !== state.siteSha) throw conflict();
+        return Promise.all(CONFIG.pages.concat(CONFIG.scripts).map(function (path) {
+          return getAt(path, head).then(function (file) {
+            var out = applySettings(file.text, path, o, n);
+            if (out !== file.text) { changed.push(path); return { path: path, text: out }; }
+            return null;
+          });
+        }));
+      }).then(function (files) {
+        return files.filter(Boolean).concat([{ path: CONFIG.sitePath, text: JSON.stringify(next, null, 2) + '\n' }]);
+      });
+    }, 'Update site contact details and links')
+      .then(function (res) {
+        state.site = next;
+        state.siteSha = res.blobs[CONFIG.sitePath];
+        setBusy(false);
+        status('Published. Updated ' + changed.length + ' file' + (changed.length === 1 ? '' : 's') + '; the website updates in about a minute.', false,
+          res.commit.html_url ? { href: res.commit.html_url, text: 'View the change' } : null);
+      })
+      .catch(function (e) { setBusy(false); status(publishError(e), true); });
+  });
+
+  /* ---------- change text across pages ---------- */
+  var replaceForm = $('[data-replace]');
+  var replaceReady = null;      // { find, with } that the shown matches belong to
+
+  function escText(v) { return v.replace(/&/g, '&amp;'); }
+
+  /* Replaces in visible text and in readable attributes (alt, title, aria-label,
+     meta content). Never touches links, class names, <script> or <style>. */
+  function replaceText(html, find, repl) {
+    var variants = [find];
+    if (escText(find) !== find) variants.push(escText(find));
+    var to = escText(repl);
+    var count = 0, skip = false;
+    var out = html.split(/(<[^>]*>)/).map(function (part, i) {
+      if (i % 2) {
+        if (/^<(script|style)\b/i.test(part)) { skip = true; return part; }
+        if (/^<\/(script|style)>/i.test(part)) { skip = false; return part; }
+        return part.replace(/(\s(?:alt|title|aria-label|content)=")([^"]*)(")/gi, function (m, a, val, z) {
+          variants.forEach(function (v) {
+            var pieces = val.split(v);
+            count += pieces.length - 1;
+            val = pieces.join(to);
+          });
+          return a + val + z;
+        });
+      }
+      if (skip) return part;
+      variants.forEach(function (v) {
+        var pieces = part.split(v);
+        count += pieces.length - 1;
+        part = pieces.join(to);
+      });
+      return part;
+    }).join('');
+    return { text: out, count: count };
+  }
+
+  function readReplace() {
+    var f = replaceForm.elements;
+    var find = f.find.value, repl = f['with'].value;
+    var err = '';
+    if (find.trim().length < 3) err = 'Type at least 3 characters to find.';
+    else if (/[<>]/.test(find + repl)) err = 'Text can\'t contain < or >.';
+    else if (find === repl) err = 'The replacement is the same as the text.';
+    $('[data-replace-error]').textContent = err;
+    return err ? null : { find: find, with: repl };
+  }
+
+  function showMatches(rows) {
+    var ul = $('[data-matches]');
+    while (ul.firstChild) ul.removeChild(ul.firstChild);
+    rows.forEach(function (r) {
+      var li = doc.createElement('li');
+      li.textContent = r.path + ': ' + r.count + ' match' + (r.count === 1 ? '' : 'es');
+      ul.appendChild(li);
+    });
+  }
+
+  replaceForm.addEventListener('input', function () {
+    replaceReady = null;
+    $('[data-replace-publish]').disabled = true;
+    showMatches([]);
+  });
+
+  replaceForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+    if (state.busy) return;
+    var q = readReplace();
+    if (!q) return;
+    setBusy(true);
+    status('Searching the pages…');
+    Promise.all(CONFIG.pages.map(function (path) {
+      return getAt(path, CONFIG.branch).then(function (f) { return { path: path, count: replaceText(f.text, q.find, q.with).count }; });
+    }))
+      .then(function (rows) {
+        setBusy(false);
+        var hits = rows.filter(function (r) { return r.count; });
+        var total = hits.reduce(function (a, r) { return a + r.count; }, 0);
+        showMatches(hits);
+        replaceReady = total ? q : null;
+        $('[data-replace-publish]').disabled = !total;
+        status(total ? total + ' match' + (total === 1 ? '' : 'es') + ' found. Press Replace and publish to change them.' : 'No matches in the page text.');
+      })
+      .catch(function (err) { setBusy(false); status('Could not search: ' + err.message, true); });
+  });
+
+  $('[data-replace-publish]').addEventListener('click', function () {
+    var q = replaceReady;
+    if (state.busy || !q) return;
+    var btn = this;
+    setBusy(true);
+    btn.disabled = true;
+    status('Publishing…');
+    var total = 0;
+    commitAt(function (head) {
+      return Promise.all(CONFIG.pages.map(function (path) {
+        return getAt(path, head).then(function (f) {
+          var r = replaceText(f.text, q.find, q.with);
+          total += r.count;
+          return r.count ? { path: path, text: r.text } : null;
+        });
+      })).then(function (files) { return files.filter(Boolean); });
+    }, 'Change text "' + q.find.slice(0, 40) + '" to "' + q.with.slice(0, 40) + '"')
+      .then(function (res) {
+        setBusy(false);
+        replaceReady = null;
+        showMatches([]);
+        status('Replaced ' + total + ' match' + (total === 1 ? '' : 'es') + '. The website updates in about a minute.', false,
+          res.commit.html_url ? { href: res.commit.html_url, text: 'View the change' } : null);
+      })
+      .catch(function (e) { setBusy(false); btn.disabled = false; status(publishError(e), true); });
+  });
+
+  window.SahanAdminText = { replaceText: replaceText, applySettings: applySettings, telFrom: telFrom };
 
   window.addEventListener('beforeunload', function (e) {
     if (state.dirty || state.draftDirty || state.busy) { e.preventDefault(); e.returnValue = ''; }

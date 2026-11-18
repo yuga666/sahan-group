@@ -27,6 +27,55 @@ function serve() {
   return new Promise((r) => srv.listen(0, '127.0.0.1', () => r(srv)));
 }
 
+/* Fake GitHub: serves repo files from disk at any ref, records writes. */
+async function mockGitHub(page) {
+  const calls = [];
+  const authErrors = [];
+  await page.route('https://api.github.com/**', async (r) => {
+    const req = r.request();
+    const cors = { 'access-control-allow-origin': '*' };
+    const json = (body, status = 200) => r.fulfill({ status, contentType: 'application/json', headers: cors, body: JSON.stringify(body) });
+    // A CORS preflight carries no Authorization header, so answer it before checking auth.
+    if (req.method() === 'OPTIONS') return r.fulfill({ status: 204, headers: { ...cors, 'access-control-allow-headers': '*', 'access-control-allow-methods': 'GET, POST, PATCH' } });
+    if (req.headers()['authorization'] !== 'Bearer test-token') { authErrors.push(req.url()); return json({ message: 'Bad credentials' }, 401); }
+    const u = new URL(req.url()).pathname.replace('/repos/yuga666/sahan-group', '');
+    if (req.method() === 'GET' && u.startsWith('/contents/')) {
+      const p = decodeURIComponent(u.slice('/contents/'.length));
+      return json({ sha: 'sha-' + p, content: Buffer.from(read(p)).toString('base64') });
+    }
+    if (req.method() === 'GET' && u === '/git/ref/heads/main') return json({ object: { sha: 'head-1' } });
+    if (req.method() === 'GET' && u === '/git/commits/head-1') return json({ sha: 'head-1', tree: { sha: 'tree-1' } });
+    const body = req.postData() ? JSON.parse(req.postData()) : null;
+    calls.push({ method: req.method(), path: u, body });
+    if (u === '/git/blobs') return json({ sha: 'blob-' + calls.length });
+    if (u === '/git/trees') return json({ sha: 'tree-2' });
+    if (u === '/git/commits') return json({ sha: 'commit-2', html_url: 'https://github.com/x/y/commit/2' });
+    if (u === '/git/refs/heads/main') return json({ object: { sha: 'commit-2' } });
+    return json({ message: 'unexpected ' + u }, 500);
+  });
+  return { calls, authErrors };
+}
+
+/* Files written by the single commit, as { path: text }. */
+function committedFiles(calls) {
+  const tree = calls.find((c) => c.path === '/git/trees').body.tree;
+  const blobs = calls.filter((c) => c.path === '/git/blobs');
+  const out = {};
+  for (const t of tree) {
+    const i = calls.findIndex((c) => c.path === '/git/blobs' && 'blob-' + (calls.indexOf(c) + 1) === t.sha);
+    const b = calls[i].body;
+    out[t.path] = b.encoding === 'utf-8' ? b.content : Buffer.from(b.content, 'base64');
+  }
+  return out;
+}
+
+async function signIn(page, BASE) {
+  await page.goto(BASE + 'admin/');
+  await page.fill('#a-token', 'test-token');
+  await page.click('[data-signin] button[type=submit]');
+  await page.locator('.admin__row').first().waitFor();
+}
+
 const results = [];
 async function test(name, fn) {
   try { await fn(); results.push(['PASS', name]); console.log('  ✓ ' + name); }
@@ -182,28 +231,7 @@ function watchErrors(page) {
   await test('Admin signs in, adds a property with a photo, and publishes one commit with the new list', async () => {
     const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
     const errs = watchErrors(page);
-    const calls = [];
-    const authErrors = [];
-    const file = { sha: 'sha-1', content: Buffer.from(read('data/properties.json')).toString('base64') };
-    await page.route('https://api.github.com/**', async (r) => {
-      const req = r.request();
-      const cors = { 'access-control-allow-origin': '*' };
-      const json = (body, status = 200) => r.fulfill({ status, contentType: 'application/json', headers: cors, body: JSON.stringify(body) });
-      // A CORS preflight carries no Authorization header, so answer it before checking auth.
-      if (req.method() === 'OPTIONS') return r.fulfill({ status: 204, headers: { ...cors, 'access-control-allow-headers': '*', 'access-control-allow-methods': 'GET, POST, PATCH' } });
-      if (req.headers()['authorization'] !== 'Bearer test-token') { authErrors.push(req.url()); return json({ message: 'Bad credentials' }, 401); }
-      const u = new URL(req.url()).pathname.replace('/repos/yuga666/sahan-group', '');
-      if (req.method() === 'GET' && u.startsWith('/contents/data/properties.json')) return json(file);
-      if (req.method() === 'GET' && u === '/git/ref/heads/main') return json({ object: { sha: 'head-1' } });
-      if (req.method() === 'GET' && u === '/git/commits/head-1') return json({ sha: 'head-1', tree: { sha: 'tree-1' } });
-      const body = req.postData() ? JSON.parse(req.postData()) : null;
-      calls.push({ method: req.method(), path: u, body });
-      if (u === '/git/blobs') return json({ sha: 'blob-' + calls.length });
-      if (u === '/git/trees') return json({ sha: 'tree-2' });
-      if (u === '/git/commits') return json({ sha: 'commit-2', html_url: 'https://github.com/x/y/commit/2' });
-      if (u === '/git/refs/heads/main') return json({ object: { sha: 'commit-2' } });
-      return json({ message: 'unexpected ' + u }, 500);
-    });
+    const { calls, authErrors } = await mockGitHub(page);
     await page.goto(BASE + 'admin/');
     await page.fill('#a-token', 'test-token');
     await page.click('[data-signin] button[type=submit]');
@@ -248,6 +276,94 @@ function watchErrors(page) {
     assert.equal(t.published, true);
     assert.ok(await page.locator('[data-publish]').isDisabled(), 'Publish must be disabled after a successful publish');
     assert.deepEqual(errs, [], 'console errors / CSP violations');
+    await page.close();
+  });
+
+  await test('Site settings: changing email, phone and Instagram rewrites every page in one commit', async () => {
+    const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+    const errs = watchErrors(page);
+    const { calls, authErrors } = await mockGitHub(page);
+    await signIn(page, BASE);
+    await page.click('[data-tab="settings"]');
+    assert.equal(await page.inputValue('#s-email'), 'info@sahangroup.lk');
+    await page.fill('#s-email', 'hello@sahangroup.lk');
+    await page.fill('#s-phone', '077 111 2222');
+    await page.fill('#s-ig', 'https://www.instagram.com/sahangroup');
+    await page.click('[data-settings] button[type=submit]');
+    await page.waitForFunction(() => /Published/.test(document.querySelector('[data-status]').textContent));
+    assert.deepEqual(authErrors, []);
+    assert.equal(calls.filter((c) => c.path === '/git/commits').length, 1);
+    const files = committedFiles(calls);
+    for (const pg of ['index.html', 'about.html', 'verticals.html', 'properties.html', 'careers.html', '404.html']) {
+      const t = files[pg];
+      assert.ok(t, pg + ' should be rewritten');
+      assert.ok(!t.includes('info@sahangroup.lk'), pg + ' still has the old email');
+      assert.ok(!t.includes('tel:+94772399049') && !t.includes('077 239 9049'), pg + ' still has the old phone');
+    }
+    assert.ok(files['index.html'].includes('href="tel:+94771112222"'));
+    assert.ok(files['index.html'].includes('href="mailto:hello@sahangroup.lk?subject='));
+    assert.ok(files['index.html'].includes('<a href="https://www.instagram.com/sahangroup" target="_blank" rel="noopener" aria-label="Sahan Group on Instagram">'));
+    assert.ok(files['index.html'].includes('<a href="#" aria-label="Sahan Group on LinkedIn">'), 'untouched socials stay as they were');
+    assert.ok(files['index.html'].includes('careers@sahangroup.lk'), 'careers email untouched');
+    assert.ok(files['assets/js/main.js'].includes("'mailto:hello@sahangroup.lk?subject='"));
+    const site = JSON.parse(files['data/site.json']);
+    assert.equal(site.email, 'hello@sahangroup.lk');
+    assert.deepEqual(site.phone, { display: '077 111 2222', tel: '+94771112222' });
+    // only the intended strings changed: undo them and the page must match the original byte for byte
+    const undone = files['about.html'].split('hello@sahangroup.lk').join('info@sahangroup.lk')
+      .split('+94771112222').join('+94772399049').split('077 111 2222').join('077 239 9049')
+      .split('<a href="https://www.instagram.com/sahangroup" target="_blank" rel="noopener" aria-label=').join('<a href="#" aria-label=');
+    assert.equal(undone, read('about.html'));
+    assert.deepEqual(errs, []);
+    await page.close();
+  });
+
+  await test('Site settings: bad values are refused before anything is sent', async () => {
+    const page = await browser.newPage();
+    const { calls } = await mockGitHub(page);
+    await signIn(page, BASE);
+    await page.click('[data-tab="settings"]');
+    await page.fill('#s-email', 'not-an-email');
+    await page.fill('#s-fb', 'javascript:alert(1)');
+    await page.click('[data-settings] button[type=submit]');
+    const msg = await page.textContent('[data-settings-error]');
+    assert.match(msg, /Main email/);
+    assert.match(msg, /Facebook/);
+    assert.equal(calls.length, 0);
+    await page.close();
+  });
+
+  await test('Change text: replaces visible text on every page, never inside links or code', async () => {
+    const page = await browser.newPage();
+    const errs = watchErrors(page);
+    const { calls } = await mockGitHub(page);
+    await signIn(page, BASE);
+    await page.click('[data-tab="replace"]');
+    await page.fill('#r-find', 'Kaze Restaurant & Pub');
+    await page.fill('#r-with', 'Kaze Restaurant & Bar');
+    await page.click('[data-replace] button[type=submit]');
+    await page.waitForFunction(() => /found/.test(document.querySelector('[data-status]').textContent));
+    assert.ok((await page.locator('[data-matches] li').count()) >= 1);
+    await page.click('[data-replace-publish]');
+    await page.waitForFunction(() => /Replaced/.test(document.querySelector('[data-status]').textContent));
+    const files = committedFiles(calls);
+    assert.ok(Object.keys(files).length >= 1);
+    for (const [p, t] of Object.entries(files)) {
+      assert.ok(!t.includes('Kaze Restaurant &amp; Pub'), p + ' still has the old text');
+      const before = read(p);
+      assert.equal(t.split('Kaze Restaurant &amp; Bar').join('Kaze Restaurant &amp; Pub'), before, p + ': only that text may change');
+    }
+    assert.deepEqual(errs, []);
+    await page.close();
+  });
+
+  await test('Change text: links and code are left alone; readable attributes follow', async () => {
+    const page = await browser.newPage();
+    await page.goto(BASE + 'admin/');
+    const r = await page.evaluate(() => window.SahanAdminText.replaceText(
+      '<a href="sahan.html" title="Sahan">Sahan</a><script>var Sahan=1</script><p>Sahan &amp; co</p>', 'Sahan', 'Avora'));
+    assert.equal(r.text, '<a href="sahan.html" title="Avora">Avora</a><script>var Sahan=1</script><p>Avora &amp; co</p>');
+    assert.equal(r.count, 3);
     await page.close();
   });
 

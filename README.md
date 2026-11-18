@@ -151,9 +151,16 @@ The **Portfolio** section at the bottom of `properties.html` (`#portfolio`) list
 2. Open **`https://<site>/admin/`**, paste the token and press **Connect**. The token lives only in that browser tab and is forgotten when the tab closes.
 3. **Add property**, fill the fields, choose a photo (WebP/JPG/PNG under 2 MB) and watch the live preview. Press **Done**.
 4. Use **Up / Down** to set the order, **Hide** to take a listing off the site without deleting it, **Delete** (press twice) to remove it.
-5. Press **Publish changes**. That makes one commit to `main`; Netlify redeploys and the site shows the change in about a minute.
+5. Press **Publish changes**. Photos and listings go out together as one commit to `main`; Netlify redeploys and the site shows the change in about a minute.
 
 Anyone who should edit listings needs write access to the repository (or a token from someone who has it). Revoke a token on GitHub at any time.
+
+### Site settings and text (same admin)
+
+- **Site settings** tab: main and careers email, main and office phone, Google Maps link, Instagram / LinkedIn / Facebook. *Publish settings* rewrites every matching link and line of text on all pages (and the email used by the enquiry and CV forms) in one commit. Empty social fields leave the icon pointing nowhere, as now. Current values are kept in `data/site.json`.
+- **Change text** tab: find a phrase and replace it on every page. *Find matches* shows how many places per page; *Replace and publish* changes page text, image descriptions and page descriptions only. Links, code and layout are never touched.
+
+Every publish is a single commit on `main`, so any change can be undone on GitHub with *Revert*.
 
 ### By hand
 

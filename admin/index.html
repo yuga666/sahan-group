@@ -5,7 +5,7 @@
   <script>document.documentElement.classList.add("js");</script>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex, nofollow">
-  <title>Properties admin | Sahan Group</title>
+  <title>Site admin | Sahan Group</title>
   <link rel="icon" href="../assets/img/favicon.png" type="image/png">
   <link rel="stylesheet" href="../assets/fonts/fonts.css">
   <link rel="stylesheet" href="../assets/css/styles.css">
@@ -18,7 +18,7 @@
 
   <header class="admin__bar">
     <a class="admin__brand" href="../index.html"><img src="../assets/img/logo-light.webp" alt="Sahan Group" width="1400" height="393"></a>
-    <p class="label label--light">Properties admin</p>
+    <p class="label label--light">Site admin</p>
     <a class="tlink tlink--light" href="../properties.html#portfolio" target="_blank" rel="noopener">View live page <svg class="ico"><use href="#i-arrow"/></svg></a>
   </header>
 
@@ -37,64 +37,118 @@
       </form>
     </section>
 
-    <!-- 2. List + editor -->
+    <!-- 2. Signed in -->
     <section class="admin__panel" data-step="edit" hidden>
-      <div class="admin__head">
-        <div>
-          <h1 class="display-3">Properties</h1>
-          <p class="admin__help">Changes go live about a minute after you press <strong>Publish changes</strong>.</p>
+      <div class="admin__tabs" role="tablist" aria-label="Admin sections">
+        <button class="admin__tab is-active" type="button" role="tab" aria-selected="true" data-tab="properties">Properties</button>
+        <button class="admin__tab" type="button" role="tab" aria-selected="false" data-tab="settings">Site settings</button>
+        <button class="admin__tab" type="button" role="tab" aria-selected="false" data-tab="replace">Change text</button>
+        <button class="tlink tlink--light admin__linkbtn admin__signout" type="button" data-signout>Sign out</button>
+      </div>
+
+      <!-- 2a. Properties -->
+      <div data-panel="properties" role="tabpanel">
+        <div class="admin__head">
+          <div>
+            <h1 class="display-3">Properties</h1>
+            <p class="admin__help">Listings in the Portfolio section of the Properties page. Changes go live about a minute after you press <strong>Publish changes</strong>.</p>
+          </div>
+          <div class="admin__actions">
+            <button class="btn btn--sm btn--ghost" type="button" data-add>Add property</button>
+            <button class="btn btn--sm" type="button" data-publish disabled>Publish changes <svg class="ico"><use href="#i-arrow"/></svg></button>
+          </div>
         </div>
-        <div class="admin__actions">
-          <button class="btn btn--sm btn--ghost" type="button" data-add>Add property</button>
-          <button class="btn btn--sm" type="button" data-publish disabled>Publish changes <svg class="ico"><use href="#i-arrow"/></svg></button>
-          <button class="tlink tlink--light admin__linkbtn" type="button" data-signout>Sign out</button>
+
+        <ol class="admin__list" data-list></ol>
+
+        <div class="admin__editor" data-editor hidden>
+          <form class="admin__form" data-form novalidate>
+            <h2 class="admin__formtitle" data-form-title>Edit property</h2>
+
+            <div class="field field--full"><label for="f-name">Name *</label><input id="f-name" name="name" maxlength="80" required></div>
+            <div class="field field--full"><label for="f-type">Type</label><input id="f-type" name="type" maxlength="80" placeholder="Residential development · Sahan Homes"></div>
+            <div class="field"><label for="f-location">Location</label><input id="f-location" name="location" maxlength="80"></div>
+            <div class="field"><label for="f-status">Status tags</label><input id="f-status" name="status" maxlength="120" placeholder="Upcoming, Launching now"><small class="admin__hint">Comma separated, up to 3.</small></div>
+            <div class="field field--full"><label for="f-summary">Short description</label><textarea id="f-summary" name="summary" maxlength="400"></textarea></div>
+
+            <fieldset class="admin__group">
+              <legend>Card details <small>(leave empty to hide)</small></legend>
+              <div class="field"><label for="f-bedrooms">Bedrooms</label><input id="f-bedrooms" name="spec.bedrooms" maxlength="60"></div>
+              <div class="field"><label for="f-size">Size</label><input id="f-size" name="spec.size" maxlength="60" placeholder="950 – 1,200 sqft"></div>
+              <div class="field"><label for="f-bathrooms">Bathrooms</label><input id="f-bathrooms" name="spec.bathrooms" maxlength="60"></div>
+              <div class="field"><label for="f-parking">Parking</label><input id="f-parking" name="spec.parking" maxlength="60"></div>
+              <div class="field"><label for="f-floors">Floors / units</label><input id="f-floors" name="spec.floors" maxlength="60"></div>
+              <div class="field"><label for="f-completion">Timeline</label><input id="f-completion" name="spec.completion" maxlength="60"></div>
+            </fieldset>
+
+            <div class="field"><label for="f-pricelabel">Price label</label><input id="f-pricelabel" name="priceLabel" maxlength="40" placeholder="Starting from LKR"></div>
+            <div class="field"><label for="f-price">Price</label><input id="f-price" name="price" maxlength="20" placeholder="24M"></div>
+            <div class="field field--full"><label for="f-link">Explore link</label><input id="f-link" name="link" maxlength="300" placeholder="#residences, a page like avora.html, or https://…"><small class="admin__hint" data-link-hint></small></div>
+
+            <div class="field field--full field--file">
+              <label for="f-image">Photo</label>
+              <input id="f-image" name="imageFile" type="file" accept="image/webp,image/jpeg,image/png">
+              <small class="admin__hint" data-image-hint>WebP, JPG or PNG, under 2 MB. Landscape or portrait both work.</small>
+            </div>
+            <div class="field field--full"><label for="f-imagealt">Photo description (for screen readers)</label><input id="f-imagealt" name="imageAlt" maxlength="160"></div>
+
+            <label class="admin__check"><input type="checkbox" name="published"> Show on the website</label>
+
+            <div class="admin__formfoot">
+              <button class="btn btn--sm" type="submit">Done</button>
+              <button class="tlink tlink--light admin__linkbtn" type="button" data-cancel>Cancel</button>
+            </div>
+          </form>
+          <div class="admin__preview">
+            <p class="label label--light">Live preview</p>
+            <div class="portfolio__grid" data-preview></div>
+          </div>
         </div>
       </div>
 
-      <ol class="admin__list" data-list></ol>
-
-      <div class="admin__editor" data-editor hidden>
-        <form class="admin__form" data-form novalidate>
-          <h2 class="admin__formtitle" data-form-title>Edit property</h2>
-
-          <div class="field field--full"><label for="f-name">Name *</label><input id="f-name" name="name" maxlength="80" required></div>
-          <div class="field field--full"><label for="f-type">Type</label><input id="f-type" name="type" maxlength="80" placeholder="Residential development · Sahan Homes"></div>
-          <div class="field"><label for="f-location">Location</label><input id="f-location" name="location" maxlength="80"></div>
-          <div class="field"><label for="f-status">Status tags</label><input id="f-status" name="status" maxlength="120" placeholder="Upcoming, Launching now"><small class="admin__hint">Comma separated, up to 3.</small></div>
-          <div class="field field--full"><label for="f-summary">Short description</label><textarea id="f-summary" name="summary" maxlength="400"></textarea></div>
-
+      <!-- 2b. Site settings -->
+      <div data-panel="settings" role="tabpanel" hidden>
+        <h1 class="display-3">Site settings</h1>
+        <p class="admin__help">Contact details and links used on every page. Publishing updates every matching link and line of text across the site in one change.</p>
+        <form class="admin__form admin__form--settings" data-settings novalidate>
           <fieldset class="admin__group">
-            <legend>Card details <small>(leave empty to hide)</small></legend>
-            <div class="field"><label for="f-bedrooms">Bedrooms</label><input id="f-bedrooms" name="spec.bedrooms" maxlength="60"></div>
-            <div class="field"><label for="f-size">Size</label><input id="f-size" name="spec.size" maxlength="60" placeholder="950 – 1,200 sqft"></div>
-            <div class="field"><label for="f-bathrooms">Bathrooms</label><input id="f-bathrooms" name="spec.bathrooms" maxlength="60"></div>
-            <div class="field"><label for="f-parking">Parking</label><input id="f-parking" name="spec.parking" maxlength="60"></div>
-            <div class="field"><label for="f-floors">Floors / units</label><input id="f-floors" name="spec.floors" maxlength="60"></div>
-            <div class="field"><label for="f-completion">Timeline</label><input id="f-completion" name="spec.completion" maxlength="60"></div>
+            <legend>Email</legend>
+            <div class="field"><label for="s-email">Main email</label><input id="s-email" name="email" type="email" maxlength="120" required></div>
+            <div class="field"><label for="s-careers">Careers email (CVs)</label><input id="s-careers" name="careersEmail" type="email" maxlength="120" required></div>
           </fieldset>
-
-          <div class="field"><label for="f-pricelabel">Price label</label><input id="f-pricelabel" name="priceLabel" maxlength="40" placeholder="Starting from LKR"></div>
-          <div class="field"><label for="f-price">Price</label><input id="f-price" name="price" maxlength="20" placeholder="24M"></div>
-          <div class="field field--full"><label for="f-link">Explore link</label><input id="f-link" name="link" maxlength="300" placeholder="#residences, a page like avora.html, or https://…"><small class="admin__hint" data-link-hint></small></div>
-
-          <div class="field field--full field--file">
-            <label for="f-image">Photo</label>
-            <input id="f-image" name="imageFile" type="file" accept="image/webp,image/jpeg,image/png">
-            <small class="admin__hint" data-image-hint>WebP, JPG or PNG, under 2 MB. Landscape or portrait both work.</small>
-          </div>
-          <div class="field field--full"><label for="f-imagealt">Photo description (for screen readers)</label><input id="f-imagealt" name="imageAlt" maxlength="160"></div>
-
-          <label class="admin__check"><input type="checkbox" name="published"> Show on the website</label>
-
+          <fieldset class="admin__group">
+            <legend>Phone</legend>
+            <div class="field"><label for="s-phone">Main phone</label><input id="s-phone" name="phone" maxlength="20" required><small class="admin__hint">As it should read, e.g. 077 239 9049.</small></div>
+            <div class="field"><label for="s-office">Office phone</label><input id="s-office" name="officePhone" maxlength="20" required><small class="admin__hint">e.g. +94 33 223 3004.</small></div>
+          </fieldset>
+          <fieldset class="admin__group">
+            <legend>Links <small>(full https:// address; leave empty for none yet)</small></legend>
+            <div class="field field--full"><label for="s-maps">Google Maps</label><input id="s-maps" name="mapsUrl" maxlength="300" required></div>
+            <div class="field"><label for="s-ig">Instagram</label><input id="s-ig" name="instagram" maxlength="300" placeholder="https://www.instagram.com/…"></div>
+            <div class="field"><label for="s-li">LinkedIn</label><input id="s-li" name="linkedin" maxlength="300" placeholder="https://www.linkedin.com/company/…"></div>
+            <div class="field"><label for="s-fb">Facebook</label><input id="s-fb" name="facebook" maxlength="300" placeholder="https://www.facebook.com/…"></div>
+          </fieldset>
+          <p class="admin__hint is-error" data-settings-error role="alert"></p>
           <div class="admin__formfoot">
-            <button class="btn btn--sm" type="submit">Done</button>
-            <button class="tlink tlink--light admin__linkbtn" type="button" data-cancel>Cancel</button>
+            <button class="btn btn--sm" type="submit">Publish settings <svg class="ico"><use href="#i-arrow"/></svg></button>
           </div>
         </form>
-        <div class="admin__preview">
-          <p class="label label--light">Live preview</p>
-          <div class="portfolio__grid" data-preview></div>
-        </div>
+      </div>
+
+      <!-- 2c. Change text -->
+      <div data-panel="replace" role="tabpanel" hidden>
+        <h1 class="display-3">Change text</h1>
+        <p class="admin__help">Find a word or sentence that appears on the site and replace it everywhere. Page text, image descriptions and page descriptions change; links, code and layout are left alone. Check the matches before you publish.</p>
+        <form class="admin__form" data-replace novalidate>
+          <div class="field field--full"><label for="r-find">Find</label><input id="r-find" name="find" maxlength="300" placeholder="e.g. Sahan Engineering &amp; Constructions" required></div>
+          <div class="field field--full"><label for="r-with">Replace with</label><input id="r-with" name="with" maxlength="300"></div>
+          <p class="admin__hint is-error" data-replace-error role="alert"></p>
+          <div class="admin__formfoot">
+            <button class="btn btn--sm btn--ghost" type="submit">Find matches</button>
+            <button class="btn btn--sm" type="button" data-replace-publish disabled>Replace and publish <svg class="ico"><use href="#i-arrow"/></svg></button>
+          </div>
+        </form>
+        <ul class="admin__matches" data-matches></ul>
       </div>
 
       <p class="admin__status" data-status role="status" aria-live="polite"></p>
