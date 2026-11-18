@@ -4224,3 +4224,4 @@ body.header-tucked .subnav { top: 0; }
 @media (prefers-reduced-motion: reduce) {
   .pcard { animation: none; }
 }
+.portfolio__error { grid-column: 1 / -1; font-size: 0.85rem; color: var(--gold-ink); }

@@ -182,16 +182,27 @@ function watchErrors(page) {
   await test('Admin signs in, adds a property with a photo, and publishes one commit with the new list', async () => {
     const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
     const errs = watchErrors(page);
-    const puts = [];
+    const calls = [];
+    const authErrors = [];
     const file = { sha: 'sha-1', content: Buffer.from(read('data/properties.json')).toString('base64') };
     await page.route('https://api.github.com/**', async (r) => {
       const req = r.request();
-      assert.equal(req.headers()['authorization'], 'Bearer test-token');
-      if (req.method() === 'GET') return r.fulfill({ contentType: 'application/json', body: JSON.stringify(file), headers: { 'access-control-allow-origin': '*' } });
-      if (req.method() === 'OPTIONS') return r.fulfill({ status: 204, headers: { 'access-control-allow-origin': '*', 'access-control-allow-headers': '*', 'access-control-allow-methods': 'GET, PUT' } });
-      puts.push({ url: req.url(), body: JSON.parse(req.postData()) });
-      return r.fulfill({ contentType: 'application/json', headers: { 'access-control-allow-origin': '*' },
-        body: JSON.stringify({ content: { sha: 'sha-' + (puts.length + 1) }, commit: { html_url: 'https://github.com/x/y/commit/1' } }) });
+      const cors = { 'access-control-allow-origin': '*' };
+      const json = (body, status = 200) => r.fulfill({ status, contentType: 'application/json', headers: cors, body: JSON.stringify(body) });
+      // A CORS preflight carries no Authorization header, so answer it before checking auth.
+      if (req.method() === 'OPTIONS') return r.fulfill({ status: 204, headers: { ...cors, 'access-control-allow-headers': '*', 'access-control-allow-methods': 'GET, POST, PATCH' } });
+      if (req.headers()['authorization'] !== 'Bearer test-token') { authErrors.push(req.url()); return json({ message: 'Bad credentials' }, 401); }
+      const u = new URL(req.url()).pathname.replace('/repos/yuga666/sahan-group', '');
+      if (req.method() === 'GET' && u.startsWith('/contents/data/properties.json')) return json(file);
+      if (req.method() === 'GET' && u === '/git/ref/heads/main') return json({ object: { sha: 'head-1' } });
+      if (req.method() === 'GET' && u === '/git/commits/head-1') return json({ sha: 'head-1', tree: { sha: 'tree-1' } });
+      const body = req.postData() ? JSON.parse(req.postData()) : null;
+      calls.push({ method: req.method(), path: u, body });
+      if (u === '/git/blobs') return json({ sha: 'blob-' + calls.length });
+      if (u === '/git/trees') return json({ sha: 'tree-2' });
+      if (u === '/git/commits') return json({ sha: 'commit-2', html_url: 'https://github.com/x/y/commit/2' });
+      if (u === '/git/refs/heads/main') return json({ object: { sha: 'commit-2' } });
+      return json({ message: 'unexpected ' + u }, 500);
     });
     await page.goto(BASE + 'admin/');
     await page.fill('#a-token', 'test-token');
@@ -213,18 +224,29 @@ function watchErrors(page) {
 
     await page.click('[data-publish]');
     await page.waitForFunction(() => /Published/.test(document.querySelector('[data-status]').textContent));
-    assert.equal(puts.length, 2, 'expected photo upload + data commit');
-    assert.match(puts[0].url, /contents\/assets\/img\/properties\/test-heights-\d+\.webp$/);
-    assert.equal(puts[1].body.sha, 'sha-1', 'data update must send the sha it loaded');
-    assert.equal(puts[1].body.branch, 'main');
-    const saved = JSON.parse(Buffer.from(puts[1].body.content, 'base64').toString('utf8'));
+    assert.deepEqual(authErrors, []);
+    const commits = calls.filter((c) => c.path === '/git/commits');
+    assert.equal(commits.length, 1, 'photo + data must go out as ONE commit');
+    assert.deepEqual(commits[0].body.parents, ['head-1']);
+    const ref = calls.find((c) => c.path === '/git/refs/heads/main');
+    assert.equal(ref.body.force, false, 'must never force-push');
+    const tree = calls.find((c) => c.path === '/git/trees').body;
+    assert.equal(tree.base_tree, 'tree-1');
+    const paths = tree.tree.map((t) => t.path).sort();
+    assert.equal(paths.length, 2);
+    assert.equal(paths[0], 'assets/img/properties/' + paths[0].split('/').pop());
+    assert.match(paths[0], /^assets\/img\/properties\/test-heights-\d+\.webp$/);
+    assert.equal(paths[1], 'data/properties.json');
+    const dataBlob = calls.find((c) => c.path === '/git/blobs' && c.body.encoding === 'utf-8');
+    const saved = JSON.parse(dataBlob.body.content);
     assert.deepEqual(saved.properties.map((p) => p.id), ['avora-residences', 'test-heights']);
     assert.deepEqual(saved.properties[0], avora, 'AVORA entry must be unchanged');
     const t = saved.properties[1];
-    assert.match(t.image, /^assets\/img\/properties\/test-heights-\d+\.webp$/);
+    assert.equal(t.image, paths[0]);
     assert.deepEqual(t.status, ['Newly launched', 'On going project']);
     assert.equal(t.specs.bedrooms, '2 & 3 bedroom apartments');
     assert.equal(t.published, true);
+    assert.ok(await page.locator('[data-publish]').isDisabled(), 'Publish must be disabled after a successful publish');
     assert.deepEqual(errs, [], 'console errors / CSP violations');
     await page.close();
   });

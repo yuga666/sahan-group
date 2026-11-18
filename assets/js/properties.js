@@ -158,7 +158,7 @@
 
   function renderInto(root, data, opts) {
     var items = (data && Array.isArray(data.properties) ? data.properties : [])
-      .filter(function (p) { return p && p.published !== false && str(p.name); });
+      .filter(function (p) { return p && p.published === true && str(p.name); });
     while (root.firstChild) root.removeChild(root.firstChild);
     if (!items.length) {
       root.appendChild(el('p', 'portfolio__empty', 'New Sahan Homes developments will be listed here as they launch.'));
@@ -186,6 +186,8 @@
       root.classList.add('is-ready');
     })
     .catch(function () {
-      root.classList.add('is-ready');   // keep the static fallback that ships in the HTML
+      // Keep the static AVORA link that ships in the HTML, and say the full list didn't load.
+      root.classList.add('is-ready', 'is-error');
+      root.appendChild(el('p', 'portfolio__empty portfolio__error', 'The full list of properties could not be loaded. Please refresh the page to try again.'));
     });
 })();
