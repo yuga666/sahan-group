@@ -6,7 +6,7 @@ A static, five-page website for Sahan Group, built from the client's information
 
 Pages: **Home**, **About us**, **Verticals**, **Properties**, **Careers**.
 
-The homepage follows the manifesto and the November brief: a slow montage hero using the manifesto headline, five sector doors, a ventures strip, a count-up proof strip, a legacy section with the four-step roots timeline, the official motto, an investor section, the founder block and a map-led closing call to action. The page surface drifts between brand greens as you scroll.
+The homepage follows the manifesto and the November brief: a pinned WebGL orbit hero (one gold core for the group, five sector nodes on tilted orbits) that zooms out and swings with the scroll while the manifesto headline and two story panels rise in, five sector doors, a ventures strip, a count-up proof strip, a legacy section with the four-step roots timeline, the official motto, an investor section, the founder block and a map-led closing call to action. The page surface drifts between brand greens as you scroll.
 
 ---
 
@@ -53,6 +53,7 @@ careers.html               Careers — culture, benefits, CV submission portal
 
 assets/css/styles.css      Design system, layout, components, responsive rules
 assets/js/main.js          Navigation, reveal-on-scroll, scrollspy, count-up, scroll colour, lightbox, forms
+assets/js/orbit.js         Homepage orbit scene — plain WebGL, no libraries; drives the three hero panels
 assets/fonts/fonts.css     Helvetica Neue is system; Inter, Cormorant Garamond and Roboto Slab are embedded as data URIs
 assets/img/                Photography, AVORA renders, company logos, favicon, social image
 assets/img/brand/          Sahan Homes, Kaze, Pure Spring, Cassandra and Invest Lanka logos
