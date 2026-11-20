@@ -129,7 +129,7 @@ function watchErrors(page) {
   await test('properties.html is byte-identical to the original apart from the added portfolio block', async () => {
     const now = read('properties.html')
       .replace(/    <!-- portfolio:start[\s\S]*?<!-- portfolio:end -->\n\n/, '')
-      .replace(/  <script src="assets\/js\/properties\.js" defer><\/script><!-- portfolio:script -->\n/, '');
+      .replace(/  <script src="assets\/js\/properties\.js(?:\?v=\d+)?" defer><\/script><!-- portfolio:script -->\n/, '');
     assert.equal(now, read('tests/baseline-properties.html'));
   });
 
