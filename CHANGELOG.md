@@ -7,6 +7,20 @@ Newest entries first. Keep this file updated with each design or content pass.
 
 ## November 2026
 
+### Green background everywhere + small-type polish
+**20 Nov 2026**
+
+Yuga reported the Highland Moss green background was not showing.
+
+- Cause: before 20 Nov the stylesheet was cached by browsers for a year, so
+  anyone who had visited saw the old cream design. Every page now loads CSS/JS
+  with `?v=20261120`, which forces a fresh copy. When you change
+  `styles.css` or `main.js` by hand, bump that date on every page.
+- Properties, "Arrange a private preview": the sales-gallery address, hours,
+  phone and email were dark-on-green (contrast 1.5:1, unreadable). Now cream text.
+- Type floor raised site-wide: 8px labels are now 10px, 9-10px are 11px,
+  11px are 12px, so labels, buttons and captions read comfortably on phones.
+
 ### Property portfolio + admin
 **18 Nov 2026**
 
