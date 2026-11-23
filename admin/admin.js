@@ -578,7 +578,7 @@
     if (d.charAt(0) === '0') return '+94' + d.slice(1);       // Sri Lankan local format
     return '+' + d;
   }
-  function escAttr(v) { return v.replace(/&/g, '&amp;'); }
+  function escAttr(v) { return v.replace(/&/g, '&amp;').replace(/"/g, '&quot;'); }
   function swapAll(text, from, to) { return from && from !== to ? text.split(from).join(to) : text; }
 
   function fillSettings() {
@@ -682,6 +682,7 @@
     var variants = [find];
     if (escText(find) !== find) variants.push(escText(find));
     var to = escText(repl);
+    var toAttr = to.replace(/"/g, '&quot;');   // a quote must not end the attribute it lands in
     var count = 0, skip = false;
     var out = html.split(/(<[^>]*>)/).map(function (part, i) {
       if (i % 2) {
@@ -691,7 +692,7 @@
           variants.forEach(function (v) {
             var pieces = val.split(v);
             count += pieces.length - 1;
-            val = pieces.join(to);
+            val = pieces.join(toAttr);
           });
           return a + val + z;
         });

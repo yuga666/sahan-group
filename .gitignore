@@ -3,3 +3,8 @@ Thumbs.db
 *.log
 .tmp/
 .dsh-office.*/
+.env
+.env.*
+*.pem
+*.key
+.claude-tmp/
