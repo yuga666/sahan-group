@@ -578,7 +578,7 @@
     if (d.charAt(0) === '0') return '+94' + d.slice(1);       // Sri Lankan local format
     return '+' + d;
   }
-  function escAttr(v) { return v.replace(/&/g, '&amp;'); }
+  function escAttr(v) { return v.replace(/&/g, '&amp;').replace(/"/g, '&quot;'); }
   function swapAll(text, from, to) { return from && from !== to ? text.split(from).join(to) : text; }
 
   function fillSettings() {
@@ -682,16 +682,19 @@
     var variants = [find];
     if (escText(find) !== find) variants.push(escText(find));
     var to = escText(repl);
+    var toAttr = to.replace(/"/g, '&quot;');   // a quote must not end the attribute it lands in
+    var attrVariants = variants.slice();          // inside attributes a quote is stored as &quot;
+    if (escText(find).replace(/"/g, '&quot;') !== escText(find)) attrVariants.push(escText(find).replace(/"/g, '&quot;'));
     var count = 0, skip = false;
     var out = html.split(/(<[^>]*>)/).map(function (part, i) {
       if (i % 2) {
         if (/^<(script|style)\b/i.test(part)) { skip = true; return part; }
         if (/^<\/(script|style)>/i.test(part)) { skip = false; return part; }
         return part.replace(/(\s(?:alt|title|aria-label|content)=")([^"]*)(")/gi, function (m, a, val, z) {
-          variants.forEach(function (v) {
+          attrVariants.forEach(function (v) {
             var pieces = val.split(v);
             count += pieces.length - 1;
-            val = pieces.join(to);
+            val = pieces.join(toAttr);
           });
           return a + val + z;
         });

@@ -7,6 +7,19 @@ Newest entries first. Keep this file updated with each design or content pass.
 
 ## November 2026
 
+### Security hardening
+**23 Nov 2026**
+
+20-point security audit (full report: `docs/SECURITY-AUDIT.md`).
+
+- More security headers (COOP, cross-domain policy, newer Permissions-Policy,
+  stricter CSP, 2-year HSTS).
+- Repo-only folders and notes (`_brand/`, `preview/`, README, CHANGELOG,
+  `netlify.toml`) now return 404 on the live site.
+- `og:image` is an absolute https URL so link previews work.
+- Admin "Change text" can no longer break an attribute with a `"`.
+- `.gitignore` covers `.env` files and keys.
+
 ### Property portfolio + admin
 **18 Nov 2026**
 
